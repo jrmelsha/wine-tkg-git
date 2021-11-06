@@ -1,0 +1,27 @@
+From 61791e356b38c8d1a0edd9959281125eb5f6f590 Mon Sep 17 00:00:00 2001
+From: DodoGTA <tcg96nougat@gmail.com>
+Date: Mon, 1 Nov 2021 16:15:05 +0200
+Subject: [PATCH] Hide Wine from osu! by default
+
+We do a little trolling for @peppy's Wine hacks/workarounds :D
+---
+ loader/wine.inf.in | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/loader/wine.inf.in b/loader/wine.inf.in
+index d4d5228bc54..ab4c8712e6d 100644
+--- a/loader/wine.inf.in
++++ b/loader/wine.inf.in
+@@ -782,6 +782,9 @@ HKCU,Software\Microsoft\Windows\Shell\Associations\UrlAssociations\ftp\UserChoic
+ HKCU,Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice,"ProgId",,"http"
+ HKCU,Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice,"ProgId",,"https"
+ 
++; Hide Wine from osu! by default
++HKCU,Software\Wine\AppDefaults\osu!.exe,"HideWineExports",,"Y"
++
+ [Nls]
+ HKLM,System\CurrentControlSet\Control\Nls\Language,"0401",,"l_intl.nls"
+ HKLM,System\CurrentControlSet\Control\Nls\Language,"0402",,"l_intl.nls"
+-- 
+2.33.1
+

@@ -19,9 +19,10 @@
 wine-tkg-git/wine-staging-git/
 wine-tkg-git/wine-git/
 wine-tkg-git/wine-mirror-git/
+wine-tkg-git/wine-patch*/
 wine-tkg-git/ValveSoftware-wine/
-wine-tkg-git/wine-tkg-userpatches/
-!wine-tkg-git/wine-tkg-userpatches/README.md
+wine-tkg-git/wine-tkg-userpatches/0009*
+wine-tkg-git/wine-tkg-userpatches/old*/
 wine-tkg-git/dxvk/
 wine-tkg-git/d9vk/
 wine-tkg-git/non-makepkg-builds/

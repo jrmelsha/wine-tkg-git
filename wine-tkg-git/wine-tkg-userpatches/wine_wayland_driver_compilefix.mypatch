@@ -1,0 +1,25 @@
+diff --git a/dlls/winewayland.drv/wayland.c b/dlls/winewayland.drv/wayland.c
+index 5af0fd776c6..de6012d5953 100644
+--- a/dlls/winewayland.drv/wayland.c
++++ b/dlls/winewayland.drv/wayland.c
+@@ -31,6 +31,7 @@
+ #include <errno.h>
+ #include <poll.h>
+ #include <unistd.h>
++#include <fcntl.h>
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(waylanddrv);
+ 
+diff --git a/dlls/winewayland.drv/wayland_data_device.c b/dlls/winewayland.drv/wayland_data_device.c
+index b2c65e16a3b..01c74a1250c 100644
+--- a/dlls/winewayland.drv/wayland_data_device.c
++++ b/dlls/winewayland.drv/wayland_data_device.c
+@@ -36,6 +36,8 @@
+ #include <assert.h>
+ #include <errno.h>
+ #include <poll.h>
++#include <unistd.h>
++#include <fcntl.h>
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(clipboard);
+ 
