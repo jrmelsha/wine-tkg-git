@@ -11,7 +11,7 @@ index 42f161e3af9..8cf58d4f972 100644
  @SET_MAKE@
  
 diff --git a/configure b/configure
-index 389b83e931e..e6f69e230b0 100755
+index 389b83e931e..8b7a5de2f2c 100755
 --- a/configure
 +++ b/configure
 @@ -683,6 +683,16 @@ DBUS_CFLAGS
@@ -47,11 +47,10 @@ index 389b83e931e..e6f69e230b0 100755
  enable_winex11_drv
  enable_winexinput_sys
  enable_wing32
-@@ -1950,7 +1962,15 @@ XSLT_PE_LIBS
- ZLIB_PE_CFLAGS
- ZLIB_PE_LIBS
- XMKMF
- CPP
+@@ -1954,6 +1966,14 @@ INOTIFY_CFLAGS
+ INOTIFY_LIBS
+ DBUS_CFLAGS
+ DBUS_LIBS
 +WAYLAND_CLIENT_CFLAGS
 +WAYLAND_CLIENT_LIBS
 +WAYLAND_PROTOCOLS_CFLAGS
@@ -60,9 +59,9 @@ index 389b83e931e..e6f69e230b0 100755
 +XKBCOMMON_LIBS
 +WAYLAND_EGL_CFLAGS
 +WAYLAND_EGL_LIBS
- INOTIFY_CFLAGS
- INOTIFY_LIBS
- DBUS_CFLAGS
+ HAL_CFLAGS
+ HAL_LIBS
+ GNUTLS_CFLAGS
 @@ -2690,6 +2710,7 @@ Optional Packages:
    --without-xshape        do not use the Xshape extension
    --without-xshm          do not use XShm (shared memory extension)
@@ -71,11 +70,10 @@ index 389b83e931e..e6f69e230b0 100755
    --with-wine-tools=DIR   use Wine tools from directory DIR
    --with-wine64=DIR       use the 64-bit Wine in DIR for a Wow64 build
    --with-x                use the X Window System
-@@ -2755,7 +2776,23 @@ Some influential environment variables:
-   ZLIB_PE_LIBS
-               Linker flags for the PE zlib, overriding the bundled version
-   XMKMF       Path to xmkmf, Makefile generator for X Window System
-   CPP         C preprocessor
+@@ -2761,6 +2782,22 @@ Some influential environment variables:
+               Linker flags for libinotify, overriding pkg-config
+   DBUS_CFLAGS C compiler flags for dbus-1, overriding pkg-config
+   DBUS_LIBS   Linker flags for dbus-1, overriding pkg-config
 +  WAYLAND_CLIENT_CFLAGS
 +              C compiler flags for wayland-client, overriding pkg-config
 +  WAYLAND_CLIENT_LIBS
@@ -92,9 +90,9 @@ index 389b83e931e..e6f69e230b0 100755
 +              C compiler flags for wayland-egl, overriding pkg-config
 +  WAYLAND_EGL_LIBS
 +              Linker flags for wayland-egl, overriding pkg-config
-   INOTIFY_CFLAGS
-               C compiler flags for libinotify, overriding pkg-config
-   INOTIFY_LIBS
+   HAL_CFLAGS  C compiler flags for hal, overriding pkg-config
+   HAL_LIBS    Linker flags for hal, overriding pkg-config
+   GNUTLS_CFLAGS
 @@ -4294,6 +4331,12 @@ if test "${with_xxf86vm+set}" = set; then :
  fi
  
