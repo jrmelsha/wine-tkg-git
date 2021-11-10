@@ -65,14 +65,6 @@ if msg2; then # Arch chroot workaround for even more looping fun
   else
     msg2 'ccache was not found and will not be used'
   fi
-  # Remove gst-editing-services
-  if pacman -Qq gst-editing-services &> /dev/null; then
-    warning '! found gst-editing-services package, known to break wine prefix creation !'
-    read -rp "  Uninstall it?"$'\n> N/y : ' _gst_editing_services;
-    if [[ "$_gst_editing_services" =~ [yY] ]]; then
-      sudo pacman -R gst-editing-services
-    fi
-  fi
 fi
 
 options=(${_makepkg_options[@]})
@@ -95,6 +87,7 @@ depends=(
     'libpcap'               'lib32-libpcap'
     'faudio'                'lib32-faudio'
     'desktop-file-utils'    'jxrlib'
+    $_user_deps
 )
 
 makedepends=('git' 'autoconf' 'ncurses' 'bison' 'perl' 'fontforge' 'flex'
@@ -425,9 +418,9 @@ md5sums=('SKIP'
          'f2db9103d6527377746540a9f8860c2f'
          '15995e43af57b18bf7b45cc2d5af4f2d'
          '6f7cc6eb54f700d57006897e8c50a6a3'
-         '0873bbee85f8a9daad4714d2989ed87b'
+         '4e06f8410eb89b159e1fe40cfe74d8ad'
          '7d9a7cf523c7283c64266148707b8bac'
-         'feb5508289c37ebfc4a5630ce6a166f8'
+         '29684207eabe387cb0d75f4ea815acbb'
          'f404adafc8648495270e01241cd0601e'
          '05d01c35cdd4d870a496aa00c8f7f9bc'
          '3d5518c89320a59400774a86b9a1cf2f'
@@ -513,6 +506,17 @@ pkgver() {
 }
 
 prepare() {
+	if msg2; then # Arch chroot workaround for even more looping fun
+	  # Remove gst-editing-services
+	  if pacman -Qq gst-editing-services &> /dev/null; then
+	    warning '! found gst-editing-services package, known to break wine prefix creation !'
+	    read -rp "  Uninstall it?"$'\n> N/y : ' _gst_editing_services;
+	    if [[ "$_gst_editing_services" =~ [yY] ]]; then
+	      sudo pacman -R gst-editing-services
+	    fi
+	  fi
+	fi
+
 	# Symlink legacy patches to srcdir
 	if [ "$_NUKR" != "debug" ] || [[ "$_DEBUGANSW1" =~ [yY] ]]; then
 	  for _sympatch in "$_where"/*.patch; do
