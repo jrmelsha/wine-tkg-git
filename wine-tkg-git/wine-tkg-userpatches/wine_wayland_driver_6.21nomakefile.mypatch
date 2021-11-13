@@ -1,20 +1,8 @@
-diff --git a/Makefile.in b/Makefile.in
-index 42f161e3af9..8cf58d4f972 100644
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -89,6 +89,7 @@ DISABLED_SUBDIRS    = @DISABLED_SUBDIRS@
- CONFIGURE_TARGETS   = @CONFIGURE_TARGETS@
- TOP_INSTALL_LIB     = @TOP_INSTALL_LIB@
- TOP_INSTALL_DEV     = @TOP_INSTALL_DEV@
-+WAYLAND_SCANNER     = @WAYLAND_SCANNER@
- @ALL_VARS_RULES@
- @SET_MAKE@
- 
 diff --git a/configure b/configure
-index 389b83e931e..8b7a5de2f2c 100755
+index a224cb19d94..5d45a66f035 100755
 --- a/configure
 +++ b/configure
-@@ -683,6 +683,16 @@ DBUS_CFLAGS
+@@ -680,6 +680,16 @@ DBUS_CFLAGS
  INOTIFY_LIBS
  INOTIFY_CFLAGS
  PCAP_LIBS
@@ -31,7 +19,7 @@ index 389b83e931e..8b7a5de2f2c 100755
  X_EXTRA_LIBS
  X_LIBS
  X_PRE_LIBS
-@@ -900,6 +910,7 @@ with_xrender
+@@ -905,6 +915,7 @@ with_xrender
  with_xshape
  with_xshm
  with_xxf86vm
@@ -39,7 +27,7 @@ index 389b83e931e..8b7a5de2f2c 100755
  with_wine_tools
  with_wine64
  enable_largefile
-@@ -1693,6 +1704,7 @@ enable_winepulse_drv
+@@ -1700,6 +1711,7 @@ enable_winepulse_drv
  enable_wineqtdecoder
  enable_wineusb_sys
  enable_winevulkan
@@ -47,7 +35,7 @@ index 389b83e931e..8b7a5de2f2c 100755
  enable_winex11_drv
  enable_winexinput_sys
  enable_wing32
-@@ -1954,6 +1966,14 @@ INOTIFY_CFLAGS
+@@ -1961,6 +1973,14 @@ INOTIFY_CFLAGS
  INOTIFY_LIBS
  DBUS_CFLAGS
  DBUS_LIBS
@@ -62,7 +50,7 @@ index 389b83e931e..8b7a5de2f2c 100755
  HAL_CFLAGS
  HAL_LIBS
  GNUTLS_CFLAGS
-@@ -2690,6 +2710,7 @@ Optional Packages:
+@@ -2694,6 +2714,7 @@ Optional Packages:
    --without-xshape        do not use the Xshape extension
    --without-xshm          do not use XShm (shared memory extension)
    --without-xxf86vm       do not use XFree video mode extension
@@ -70,7 +58,7 @@ index 389b83e931e..8b7a5de2f2c 100755
    --with-wine-tools=DIR   use Wine tools from directory DIR
    --with-wine64=DIR       use the 64-bit Wine in DIR for a Wow64 build
    --with-x                use the X Window System
-@@ -2761,6 +2782,22 @@ Some influential environment variables:
+@@ -2765,6 +2786,22 @@ Some influential environment variables:
                Linker flags for libinotify, overriding pkg-config
    DBUS_CFLAGS C compiler flags for dbus-1, overriding pkg-config
    DBUS_LIBS   Linker flags for dbus-1, overriding pkg-config
@@ -93,7 +81,7 @@ index 389b83e931e..8b7a5de2f2c 100755
    HAL_CFLAGS  C compiler flags for hal, overriding pkg-config
    HAL_LIBS    Linker flags for hal, overriding pkg-config
    GNUTLS_CFLAGS
-@@ -4294,6 +4331,12 @@ if test "${with_xxf86vm+set}" = set; then :
+@@ -4290,6 +4327,12 @@ if test "${with_xxf86vm+set}" = set; then :
  fi
  
  
@@ -106,7 +94,7 @@ index 389b83e931e..8b7a5de2f2c 100755
  
  # Check whether --with-wine-tools was given.
  if test "${with_wine_tools+set}" = set; then :
-@@ -12833,6 +12876,468 @@ enable_winex11_drv=${enable_winex11_drv:-no}
+@@ -12806,6 +12849,468 @@ enable_winex11_drv=${enable_winex11_drv:-no}
  fi
  fi
  
@@ -575,7 +563,15 @@ index 389b83e931e..8b7a5de2f2c 100755
  if test "$ac_cv_header_CL_cl_h" = "yes"
  then
      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clGetPlatformInfo in -lOpenCL" >&5
-@@ -18634,6 +19139,15 @@ X_CFLAGS = $X_CFLAGS
+@@ -19515,6 +20020,7 @@ wine_fn_config_makefile dlls/winepulse.drv enable_winepulse_drv
+ wine_fn_config_makefile dlls/wineqtdecoder enable_wineqtdecoder
+ wine_fn_config_makefile dlls/wineusb.sys enable_wineusb_sys
+ wine_fn_config_makefile dlls/winevulkan enable_winevulkan
++wine_fn_config_makefile dlls/winewayland.drv enable_winewayland_drv
+ wine_fn_config_makefile dlls/winex11.drv enable_winex11_drv
+ wine_fn_config_makefile dlls/winexinput.sys enable_winexinput_sys
+ wine_fn_config_makefile dlls/wing.dll16 enable_win16
+@@ -20779,6 +21285,15 @@ X_CFLAGS = $X_CFLAGS
  X_PRE_LIBS = $X_PRE_LIBS
  X_LIBS = $X_LIBS
  X_EXTRA_LIBS = $X_EXTRA_LIBS
@@ -591,19 +587,11 @@ index 389b83e931e..8b7a5de2f2c 100755
  PCAP_LIBS = $PCAP_LIBS
  INOTIFY_CFLAGS = $INOTIFY_CFLAGS
  INOTIFY_LIBS = $INOTIFY_LIBS
-@@ -19793,6 +20307,7 @@ wine_fn_config_makefile dlls/winepulse.drv enable_winepulse_drv
- wine_fn_config_makefile dlls/wineqtdecoder enable_wineqtdecoder
- wine_fn_config_makefile dlls/wineusb.sys enable_wineusb_sys
- wine_fn_config_makefile dlls/winevulkan enable_winevulkan
-+wine_fn_config_makefile dlls/winewayland.drv enable_winewayland_drv
- wine_fn_config_makefile dlls/winex11.drv enable_winex11_drv
- wine_fn_config_makefile dlls/winexinput.sys enable_winexinput_sys
- wine_fn_config_makefile dlls/wing.dll16 enable_win16
 diff --git a/configure.ac b/configure.ac
-index 0dbf7365714..cd264a98185 100644
+index f86a5decb07..ae2d0ce7c46 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -103,6 +103,7 @@ AC_ARG_WITH(xshm,      AS_HELP_STRING([--without-xshm],[do not use XShm (shared
+@@ -98,6 +98,7 @@ AC_ARG_WITH(xshm,      AS_HELP_STRING([--without-xshm],[do not use XShm (shared
              [if test "x$withval" = "xno"; then ac_cv_header_X11_extensions_XShm_h=no; fi])
  AC_ARG_WITH(xxf86vm,   AS_HELP_STRING([--without-xxf86vm],[do not use XFree video mode extension]),
              [if test "x$withval" = "xno"; then ac_cv_header_X11_extensions_xf86vmode_h=no; ac_cv_header_X11_extensions_xf86vmproto_h=no; fi])
@@ -611,7 +599,7 @@ index 0dbf7365714..cd264a98185 100644
  
  AC_ARG_WITH(wine-tools,AS_HELP_STRING([--with-wine-tools=DIR],[use Wine tools from directory DIR]))
  AC_ARG_WITH(wine64,    AS_HELP_STRING([--with-wine64=DIR],[use the 64-bit Wine in DIR for a Wow64 build]))
-@@ -1277,6 +1278,35 @@ else
+@@ -1292,6 +1293,35 @@ else
                       [enable_winex11_drv])
  fi
  
@@ -647,16 +635,7 @@ index 0dbf7365714..cd264a98185 100644
  dnl **** Check for OpenCL ****
  if test "$ac_cv_header_CL_cl_h" = "yes"
  then
-@@ -2404,7 +2434,7 @@ AC_CONFIG_COMMANDS([include/stamp-h], [echo timestamp > include/stamp-h])
- AS_ECHO_N("creating Makefile rules...") >&AS_MESSAGE_FD
- 
- AC_SUBST([ALL_VARS_RULES],
--"m4_set_foreach([_AC_SUBST_VARS],[var],[m4_if(m4_bregexp(m4_defn([var]),[\(_CFLAGS\|_LIBS\)$]),-1,,[var = $var
-+"m4_set_foreach([_AC_SUBST_VARS],[var],[m4_if(m4_bregexp(m4_defn([var]),[\(_CFLAGS\|_LIBS\|_DATADIR\)$]),-1,,[var = $var
- ])])")
- 
- makedep_flags=""
-@@ -3504,6 +3534,7 @@ WINE_CONFIG_MAKEFILE(dlls/winepulse.drv)
+@@ -3490,6 +3520,7 @@ WINE_CONFIG_MAKEFILE(dlls/winepulse.drv)
  WINE_CONFIG_MAKEFILE(dlls/wineqtdecoder)
  WINE_CONFIG_MAKEFILE(dlls/wineusb.sys)
  WINE_CONFIG_MAKEFILE(dlls/winevulkan)
@@ -689,13 +668,13 @@ index e5ea0735ed2..b0a40cd1296 100644
  /***********************************************************************
   *		SendMessageTimeoutW  (USER32.@)
 diff --git a/dlls/user32/user32.spec b/dlls/user32/user32.spec
-index 306f955b2a2..0bf3d82794d 100644
+index 87f4dc468bf..d22db06f4f2 100644
 --- a/dlls/user32/user32.spec
 +++ b/dlls/user32/user32.spec
-@@ -838,3 +838,4 @@
- #
+@@ -839,3 +839,4 @@
  @ cdecl __wine_send_input(long ptr ptr)
  @ cdecl __wine_set_pixel_format(long long)
+ @ cdecl __wine_set_user_driver(ptr long)
 +@ cdecl __wine_send_internal_message_timeout(long long long long long long long ptr)
 diff --git a/dlls/win32u/dibdrv/dc.c b/dlls/win32u/dibdrv/dc.c
 index 8404630bb48..c9684ce5752 100644
@@ -778,10 +757,10 @@ index 00000000000..24930d419f2
 +RC_SRCS = version.rc
 diff --git a/dlls/winewayland.drv/display.c b/dlls/winewayland.drv/display.c
 new file mode 100644
-index 00000000000..1b705ff6ded
+index 00000000000..7128f125bf8
 --- /dev/null
 +++ b/dlls/winewayland.drv/display.c
-@@ -0,0 +1,925 @@
+@@ -0,0 +1,963 @@
 +/*
 + * WAYLAND display device functions
 + *
@@ -1225,7 +1204,7 @@ index 00000000000..1b705ff6ded
 +    SetupDiDestroyDeviceInfoList(devinfo);
 +}
 +
-+static void wayland_init_display_devices_internal(struct wayland *wayland, BOOL force_send_change)
++static void wayland_init_display_devices_internal(struct wayland *wayland)
 +{
 +    HANDLE mutex;
 +    HDEVINFO gpu_devinfo = NULL, monitor_devinfo = NULL;
@@ -1283,8 +1262,7 @@ index 00000000000..1b705ff6ded
 +    {
 +        snprintfW(output->wine_name, ARRAY_SIZE(output->wine_name),
 +                  adapter_name_fmtW, output_index + 1);
-+        TRACE("output->name=%s (id=0x%x) wine_name=%s\n",
-+              output->name, output->id, wine_dbgstr_w(output->wine_name));
++        TRACE("name=%s wine_name=%s\n", output->name, wine_dbgstr_w(output->wine_name));
 +        output_index++;
 +    }
 +
@@ -1294,6 +1272,12 @@ index 00000000000..1b705ff6ded
 +    SetupDiDestroyDeviceInfoList(gpu_devinfo);
 +    RegCloseKey(video_hkey);
 +    release_display_devices_init_mutex(mutex);
++}
++
++static void wayland_broadcast_wm_display_change(void)
++{
++    struct wayland_output *output;
++    struct wayland *wayland = wayland_process_acquire();
 +
 +    /* During thread wayland initialization we will get our initial output
 +     * information and init the display devices. There is no need to send out
@@ -1301,27 +1285,32 @@ index 00000000000..1b705ff6ded
 +     * Additionally, thread initialization may occur in a context that has
 +     * acquired the internal Wine user32 lock, and sending messages would lead
 +     * to an internal user32 lock error. */
-+    if (wayland->initialized &&
-+        (force_send_change ||
-+         GetCurrentThreadId() == GetWindowThreadProcessId(GetDesktopWindow(), NULL)))
++    if (wayland->initialized)
 +    {
 +        /* The first valid output is the primary. */
 +        wl_list_for_each(output, &wayland->output_list, link)
 +        {
++            int width, height;
 +            if (!output->current_wine_mode) continue;
++            width = output->current_wine_mode->width;
++            height = output->current_wine_mode->height;
++            wayland_process_release();
 +
-+            SendMessageTimeoutW(HWND_BROADCAST, WM_DISPLAYCHANGE, 32,
-+                                MAKELPARAM(output->current_wine_mode->width,
-+                                           output->current_wine_mode->height),
-+                                SMTO_ABORTIFHUNG, 2000, NULL);
-+            break;
++            SendMessageW(GetDesktopWindow(), WM_WAYLAND_BROADCAST_DISPLAY_CHANGE,
++                         32, MAKELPARAM(width, height));
++            return;
 +        }
 +    }
++
++    wayland_process_release();
 +}
 +
-+void wayland_init_display_devices(struct wayland *wayland)
++void wayland_init_display_devices()
 +{
-+    wayland_init_display_devices_internal(wayland, FALSE);
++    struct wayland *process_wayland = wayland_process_acquire();
++    wayland_init_display_devices_internal(process_wayland);
++    wayland_process_release();
++    wayland_broadcast_wm_display_change();
 +}
 +
 +static BOOL get_display_device_reg_key(const WCHAR *device_name, WCHAR *key, unsigned len)
@@ -1538,7 +1527,7 @@ index 00000000000..1b705ff6ded
 +{
 +    static const WCHAR dev_name[CCHDEVICENAME] =
 +        {'W','i','n','e',' ','W','a','y','l','a','n','d',' ','d','r','i','v','e','r',0};
-+    struct wayland *wayland = thread_init_wayland();
++    struct wayland *wayland = wayland_process_acquire();
 +
 +    TRACE("(%s,%d,%p,0x%08x) wayland=%p\n", debugstr_w(name), n, devmode, flags, wayland);
 +
@@ -1549,7 +1538,7 @@ index 00000000000..1b705ff6ded
 +        {
 +            ERR("Failed to get %s registry display settings and native mode.\n",
 +                wine_dbgstr_w(name));
-+            return FALSE;
++            goto err;
 +        }
 +        goto done;
 +    }
@@ -1559,7 +1548,7 @@ index 00000000000..1b705ff6ded
 +        if (!wayland_get_current_devmode(wayland, name, devmode))
 +        {
 +            ERR("Failed to get %s current display settings.\n", wine_dbgstr_w(name));
-+            return FALSE;
++            goto err;
 +        }
 +        goto done;
 +    }
@@ -1568,10 +1557,11 @@ index 00000000000..1b705ff6ded
 +    {
 +        ERR("Modes index out of range\n");
 +        SetLastError(ERROR_NO_MORE_FILES);
-+        return FALSE;
++        goto err;
 +    }
 +
 +done:
++    wayland_process_release();
 +    TRACE("=> %dx%d\n", devmode->dmPelsWidth, devmode->dmPelsHeight);
 +    /* Set generic fields */
 +    devmode->dmSize = FIELD_OFFSET(DEVMODEW, dmICMMethod);
@@ -1580,6 +1570,10 @@ index 00000000000..1b705ff6ded
 +    devmode->dmDriverVersion = DM_SPECVERSION;
 +    lstrcpyW(devmode->dmDeviceName, dev_name);
 +    return TRUE;
++
++err:
++    wayland_process_release();
++    return FALSE;
 +}
 +
 +static struct wayland_output_mode *get_matching_output_mode_32bpp(struct wayland_output *output,
@@ -1631,7 +1625,10 @@ index 00000000000..1b705ff6ded
 +            return FALSE;
 +
 +        if (output_mode != output->current_wine_mode)
-+            wayland_notify_wine_mode_change(output->id, output_mode->width, output_mode->height);
++        {
++            wayland_output_set_wine_mode(output, output_mode->width,
++                                         output_mode->height);
++        }
 +    }
 +
 +    return TRUE;
@@ -1644,7 +1641,8 @@ index 00000000000..1b705ff6ded
 +LONG CDECL WAYLAND_ChangeDisplaySettingsEx(LPCWSTR devname, LPDEVMODEW devmode,
 +                                           HWND hwnd, DWORD flags, LPVOID lpvoid)
 +{
-+    struct wayland *wayland = thread_wayland();
++    LONG ret;
++    struct wayland *wayland = wayland_process_acquire();
 +    struct wayland_output *output;
 +    struct wayland_output_mode *output_mode;
 +
@@ -1660,11 +1658,17 @@ index 00000000000..1b705ff6ded
 +
 +        output = wayland_output_get_by_wine_name(wayland, devname);
 +        if (!output)
-+            return DISP_CHANGE_BADPARAM;
++        {
++            ret = DISP_CHANGE_BADPARAM;
++            goto out;
++        }
 +
 +        output_mode = get_matching_output_mode_32bpp(output, devmode);
 +        if (!output_mode)
-+            return DISP_CHANGE_BADMODE;
++        {
++            ret = DISP_CHANGE_BADMODE;
++            goto out;
++        }
 +
 +        populate_devmode(output_mode, &full_mode);
 +
@@ -1673,27 +1677,34 @@ index 00000000000..1b705ff6ded
 +            if (!write_registry_settings(devname, &full_mode))
 +            {
 +                ERR("Failed to write %s display settings to registry.\n", wine_dbgstr_w(devname));
-+                return DISP_CHANGE_NOTUPDATED;
++                ret = DISP_CHANGE_NOTUPDATED;
++                goto out;
 +            }
 +        }
 +    }
 +
 +    if (flags & (CDS_TEST | CDS_NORESET))
-+        return DISP_CHANGE_SUCCESSFUL;
++    {
++        ret = DISP_CHANGE_SUCCESSFUL;
++        goto out;
++    }
 +
-+    /* The notification needs to happen before we reinit the display devices,
-+     * in order for the reinit to read the new current mode. */
 +    if (devname && devmode)
 +    {
-+        wayland_notify_wine_mode_change(output->id, output_mode->width, output_mode->height);
++        wayland_output_set_wine_mode(output, output_mode->width, output_mode->height);
 +    }
 +    else
 +    {
 +        if (!wayland_restore_all_outputs(wayland))
-+            return DISP_CHANGE_BADMODE;
++        {
++            ret = DISP_CHANGE_BADMODE;
++            goto out;
++        }
 +    }
 +
-+    wayland_init_display_devices_internal(wayland, TRUE);
++    wayland_init_display_devices_internal(wayland);
++
++    wayland_notify_wine_monitor_change();
 +
 +    if (devname && devmode)
 +    {
@@ -1705,7 +1716,13 @@ index 00000000000..1b705ff6ded
 +        TRACE("restored all outputs to registry (or native) settings\n");
 +    }
 +
-+    return DISP_CHANGE_SUCCESSFUL;
++    ret = DISP_CHANGE_SUCCESSFUL;
++
++out:
++    wayland_process_release();
++    if (ret == DISP_CHANGE_SUCCESSFUL)
++        wayland_broadcast_wm_display_change();
++    return ret;
 +}
 diff --git a/dlls/winewayland.drv/dump_pixels.c b/dlls/winewayland.drv/dump_pixels.c
 new file mode 100644
@@ -4394,10 +4411,10 @@ index 00000000000..77e40b60e14
 +#endif /* SONAME_LIBVULKAN */
 diff --git a/dlls/winewayland.drv/wayland.c b/dlls/winewayland.drv/wayland.c
 new file mode 100644
-index 00000000000..5af0fd776c6
+index 00000000000..5b5f12ba84e
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland.c
-@@ -0,0 +1,600 @@
+@@ -0,0 +1,660 @@
 +/*
 + * Wayland core handling
 + *
@@ -4429,12 +4446,24 @@ index 00000000000..5af0fd776c6
 +#include "winuser.h"
 +
 +#include <errno.h>
++#include <fcntl.h>
 +#include <poll.h>
 +#include <unistd.h>
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(waylanddrv);
 +
 +struct wl_display *process_wl_display = NULL;
++static struct wayland *process_wayland = NULL;
++CRITICAL_SECTION process_wayland_section;
++static CRITICAL_SECTION_DEBUG process_wayland_critsect_debug =
++{
++    0, 0, &process_wayland_section,
++    { &process_wayland_critsect_debug.ProcessLocksList,
++      &process_wayland_critsect_debug.ProcessLocksList },
++      0, 0, { (DWORD_PTR)(__FILE__ ": process_wayland_section") }
++};
++CRITICAL_SECTION process_wayland_section = { &process_wayland_critsect_debug,
++                                             -1, 0, 0, 0, 0 };
 +
 +static CRITICAL_SECTION thread_wayland_section;
 +static CRITICAL_SECTION_DEBUG critsect_debug =
@@ -4509,6 +4538,27 @@ index 00000000000..5af0fd776c6
 +
 +    TRACE("interface=%s version=%d\n id=%u\n", interface, version, id);
 +
++    if (strcmp(interface, "wl_output") == 0)
++    {
++        if (!wayland_output_create(wayland, id, version))
++            ERR("Failed to create wayland_output for global id=%u\n", id);
++    }
++    else if (strcmp(interface, "zxdg_output_manager_v1") == 0)
++    {
++        struct wayland_output *output;
++
++        wayland->zxdg_output_manager_v1 =
++            wl_registry_bind(registry, id, &zxdg_output_manager_v1_interface,
++                             version < 3 ? version : 3);
++
++        /* Add zxdg_output_v1 to existing outputs. */
++        wl_list_for_each(output, &wayland->output_list, link)
++            wayland_output_use_xdg_extension(output);
++    }
++
++    /* The per-process wayland instance only handles output related globals. */
++    if (wayland_is_process(wayland)) return;
++
 +    if (strcmp(interface, "wl_compositor") == 0)
 +    {
 +        wayland->wl_compositor =
@@ -4545,11 +4595,6 @@ index 00000000000..5af0fd776c6
 +            wl_registry_bind(registry, id, &wl_data_device_manager_interface,
 +                             version < 3 ? version : 3);
 +    }
-+    else if (strcmp(interface, "wl_output") == 0)
-+    {
-+        if (!wayland_output_create(wayland, id, version))
-+            ERR("Failed to create wayland_output for global id=%u\n", id);
-+    }
 +    else if (strcmp(interface, "zwp_pointer_constraints_v1") == 0)
 +    {
 +        wayland->zwp_pointer_constraints_v1 =
@@ -4559,18 +4604,6 @@ index 00000000000..5af0fd776c6
 +    {
 +        wayland->zwp_relative_pointer_manager_v1 =
 +            wl_registry_bind(registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
-+    }
-+    else if (strcmp(interface, "zxdg_output_manager_v1") == 0)
-+    {
-+        struct wayland_output *output;
-+
-+        wayland->zxdg_output_manager_v1 =
-+            wl_registry_bind(registry, id, &zxdg_output_manager_v1_interface,
-+                             version < 3 ? version : 3);
-+
-+        /* Add zxdg_output_v1 to existing outputs. */
-+        wl_list_for_each(output, &wayland->output_list, link)
-+            wayland_output_use_xdg_extension(output);
 +    }
 +}
 +
@@ -4600,7 +4633,8 @@ index 00000000000..5af0fd776c6
 +            }
 +
 +            wayland_output_destroy(output);
-+            wayland_init_display_devices(wayland);
++            if (wayland_is_process(wayland))
++                wayland_init_display_devices();
 +            return;
 +        }
 +    }
@@ -4671,23 +4705,26 @@ index 00000000000..5af0fd776c6
 +    wl_display_roundtrip_queue(wayland->wl_display, wayland->wl_event_queue);
 +    wl_display_roundtrip_queue(wayland->wl_display, wayland->wl_event_queue);
 +
-+    if (wayland->wl_data_device_manager && wayland->wl_seat)
-+        wayland_data_device_init(&wayland->data_device, wayland);
++    if (!wayland_is_process(wayland))
++    {
++        if (wayland->wl_data_device_manager && wayland->wl_seat)
++            wayland_data_device_init(&wayland->data_device, wayland);
 +
-+    /* Thread wayland instances have notification pipes to inform them when
-+     * there might be new events in their queues. The read part of the pipe
-+     * is also used as the wine server queue fd. */
-+    if (pipe2(wayland->event_notification_pipe, O_CLOEXEC) == -1)
-+        return FALSE;
-+    /* Make just the read end non-blocking */
-+    if ((flags = fcntl(wayland->event_notification_pipe[0], F_GETFL)) == -1)
-+        return FALSE;
-+    if (fcntl(wayland->event_notification_pipe[0], F_SETFL, flags | O_NONBLOCK) == -1)
-+        return FALSE;
-+    /* Keep a list of all thread wayland instances, so we can notify them. */
-+    EnterCriticalSection(&thread_wayland_section);
-+    wl_list_insert(&thread_wayland_list, &wayland->thread_link);
-+    LeaveCriticalSection(&thread_wayland_section);
++        /* Thread wayland instances have notification pipes to inform them when
++         * there might be new events in their queues. The read part of the pipe
++         * is also used as the wine server queue fd. */
++        if (pipe2(wayland->event_notification_pipe, O_CLOEXEC) == -1)
++            return FALSE;
++        /* Make just the read end non-blocking */
++        if ((flags = fcntl(wayland->event_notification_pipe[0], F_GETFL)) == -1)
++            return FALSE;
++        if (fcntl(wayland->event_notification_pipe[0], F_SETFL, flags | O_NONBLOCK) == -1)
++            return FALSE;
++        /* Keep a list of all thread wayland instances, so we can notify them. */
++        EnterCriticalSection(&thread_wayland_section);
++        wl_list_insert(&thread_wayland_list, &wayland->thread_link);
++        LeaveCriticalSection(&thread_wayland_section);
++    }
 +
 +    wayland->initialized = TRUE;
 +
@@ -4783,7 +4820,45 @@ index 00000000000..5af0fd776c6
 +BOOL wayland_process_init(void)
 +{
 +    process_wl_display = wl_display_connect(NULL);
-+    return process_wl_display != NULL;
++    if (!process_wl_display)
++        return FALSE;
++
++    process_wayland = heap_alloc_zero(sizeof(*process_wayland));
++    if (!process_wayland)
++        return FALSE;
++
++    return wayland_init(process_wayland);
++}
++
++/**********************************************************************
++ *          wayland_is_process
++ *
++ *  Checks whether a wayland instance is the per-process one.
++ */
++BOOL wayland_is_process(struct wayland *wayland)
++{
++    return wayland == process_wayland;
++}
++
++/**********************************************************************
++ *          wayland_process_acquire
++ *
++ *  Acquires the per-process wayland instance.
++ */
++struct wayland *wayland_process_acquire(void)
++{
++    EnterCriticalSection(&process_wayland_section);
++    return process_wayland;
++}
++
++/**********************************************************************
++ *          wayland_process_release
++ *
++ *  Releases the per-process wayland instance.
++ */
++void wayland_process_release(void)
++{
++    LeaveCriticalSection(&process_wayland_section);
 +}
 +
 +/**********************************************************************
@@ -4970,13 +5045,14 @@ index 00000000000..5af0fd776c6
 +}
 +
 +/**********************************************************************
-+ *          wayland_notify_wine_mode_change
++ *          wayland_notify_wine_monitor_change
 + *
-+ * Notify all wayland instances about a change in the current wine mode.
-+ * The notification is synchronous, this function returns after all
-+ * wayland instances have handled the event.
++ * Notify all wayland instances about a change in the state of wine monitors.
++ * The notification is synchronous, this function returns after all wayland
++ * instances have handled the event, except if it a thread is slow to process
++ * the message, and thus likely to be blocked by this synchronous operation.
 + */
-+void wayland_notify_wine_mode_change(uint32_t output_id, int width, int height)
++void wayland_notify_wine_monitor_change(void)
 +{
 +    struct wayland *w;
 +
@@ -4990,10 +5066,11 @@ index 00000000000..5af0fd776c6
 +     * synchronous message handling. */
 +    wl_list_for_each(w, &thread_wayland_list, thread_link)
 +    {
++        /* Use a timeout of 50ms to avoid blocking indefinitely if the
++         * target thread is not processing (and to avoid deadlocks). */
 +        __wine_send_internal_message_timeout(w->process_id, w->thread_id,
-+                                             WM_WAYLAND_MODE_CHANGE,
-+                                             output_id, MAKELPARAM(width, height),
-+                                             0, -1, NULL);
++                                             WM_WAYLAND_MONITOR_CHANGE,
++                                             0, 0, 0, 50, NULL);
 +    }
 +
 +    LeaveCriticalSection(&thread_wayland_section);
@@ -5582,10 +5659,10 @@ index 00000000000..a7dd75c3061
 +}
 diff --git a/dlls/winewayland.drv/wayland_data_device.c b/dlls/winewayland.drv/wayland_data_device.c
 new file mode 100644
-index 00000000000..b2c65e16a3b
+index 00000000000..560ad040e02
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland_data_device.c
-@@ -0,0 +1,1137 @@
+@@ -0,0 +1,1139 @@
 +/*
 + * Wayland data device (clipboard and DnD) handling
 + *
@@ -5623,7 +5700,9 @@ index 00000000000..b2c65e16a3b
 +
 +#include <assert.h>
 +#include <errno.h>
++#include <fcntl.h>
 +#include <poll.h>
++#include <unistd.h>
 +
 +WINE_DEFAULT_DEBUG_CHANNEL(clipboard);
 +
@@ -7131,10 +7210,10 @@ index 00000000000..aa1b324a38c
 +}
 diff --git a/dlls/winewayland.drv/wayland_keyboard.c b/dlls/winewayland.drv/wayland_keyboard.c
 new file mode 100644
-index 00000000000..b4559b07286
+index 00000000000..4f634e319f5
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland_keyboard.c
-@@ -0,0 +1,949 @@
+@@ -0,0 +1,997 @@
 +/*
 + * Keyboard related functions
 + *
@@ -7608,6 +7687,21 @@ index 00000000000..b4559b07286
 +    close(fd);
 +}
 +
++static BOOL wayland_surface_for_window_is_mapped(HWND hwnd)
++{
++    DWORD_PTR res;
++
++    if (!hwnd) return FALSE;
++
++    if (!SendMessageTimeoutW(hwnd, WM_WAYLAND_QUERY_SURFACE_MAPPED,
++                             0, 0, SMTO_BLOCK, 50, &res))
++    {
++        return FALSE;
++    }
++
++    return res;
++}
++
 +static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 +                                  uint32_t serial, struct wl_surface *surface,
 +                                  struct wl_array *keys)
@@ -7622,14 +7716,47 @@ index 00000000000..b4559b07286
 +    if (wayland_surface && wayland_surface->hwnd &&
 +        wayland_surface->wayland == wayland)
 +    {
-+        struct wayland_surface *toplevel = wayland_surface;
++        HWND foreground = GetForegroundWindow();
++        BOOL foreground_is_mapped;
 +
-+        TRACE("surface=%p hwnd=%p\n", wayland_surface, wayland_surface->hwnd);
++        if (foreground == GetDesktopWindow()) foreground = NULL;
++        foreground_is_mapped = wayland_surface_for_window_is_mapped(foreground);
++
++        TRACE("surface=%p hwnd=%p foreground=%p foreground_is_mapped=%d\n",
++              wayland_surface, wayland_surface->hwnd, foreground,
++              foreground_is_mapped);
++
 +        wayland->keyboard.focused_surface = wayland_surface;
 +        wayland->keyboard.enter_serial = serial;
 +
-+        while (toplevel->parent) toplevel = toplevel->parent;
-+        SetForegroundWindow(toplevel->hwnd);
++        /* If the foreground window is not mapped, it may not have had the
++         * chance to acquire the keyboard focus. If we change the foreground
++         * window now, we may cause side effects, e.g., some fullscreen games
++         * minimize if they lose focus. To avoid such side effects, err on the
++         * side of maintaining the Wine foreground state, with the expectation
++         * that the current foreground window will eventually also gain the
++         * Wayland keyboard focus. */
++        if (!foreground || foreground_is_mapped)
++        {
++            struct wayland_surface *toplevel = wayland_surface;
++            while (toplevel->parent) toplevel = toplevel->parent;
++
++            if (IsIconic(toplevel->hwnd))
++            {
++                /* If a minimized window is already activated from Wine's
++                 * perspective, reactivating it is a null operation, and thus
++                 * won't trigger any activation side-effects (e.g., many games
++                 * change the display mode when they are activated). In order
++                 * to get those effects properly applied, deactivate the window
++                 * now, so it can be properly reactivated after restoration. */
++                if (foreground == toplevel->hwnd)
++                    SetForegroundWindow(GetDesktopWindow());
++                ShowWindow(toplevel->hwnd, SW_RESTORE);
++                ShowOwnedPopups(toplevel->hwnd, TRUE);
++            }
++
++            SetForegroundWindow(toplevel->hwnd);
++        }
 +    }
 +}
 +
@@ -9323,10 +9450,10 @@ index 00000000000..26f688cc636
 +#endif /* __WINE_WAYLANDDRV_WAYLAND_KEYBOARD_LAYOUT_H */
 diff --git a/dlls/winewayland.drv/wayland_output.c b/dlls/winewayland.drv/wayland_output.c
 new file mode 100644
-index 00000000000..a0dc10a14ce
+index 00000000000..d664636cea7
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland_output.c
-@@ -0,0 +1,605 @@
+@@ -0,0 +1,614 @@
 +/*
 + * Wayland output handling
 + *
@@ -9360,55 +9487,78 @@ index 00000000000..a0dc10a14ce
 +
 +struct default_mode { int32_t width; int32_t height; };
 +struct default_mode default_modes[] = {
-+    /* 4:3 */
-+    { 320,  240},
-+    { 400,  300},
-+    { 512,  384},
-+    { 640,  480},
-+    { 768,  576},
-+    { 800,  600},
-+    {1024,  768},
-+    {1152,  864},
-+    {1280,  960},
-+    {1400, 1050},
-+    {1600, 1200},
-+    {2048, 1536},
-+    /* 5:4 */
-+    {1280, 1024},
-+    {2560, 2048},
-+    /* 16:9 */
-+    {1280,  720},
-+    {1366,  768},
-+    {1600,  900},
-+    {1920, 1080},
-+    {2560, 1440},
-+    {3200, 1800},
-+    {3840, 2160},
-+    /* 16:10 */
-+    { 320,  200},
-+    { 640,  400},
-+    {1280,  800},
-+    {1440,  900},
-+    {1680, 1050},
-+    {1920, 1200},
-+    {2560, 1600},
-+    {3840, 2400}
++    { 320,  200}, /* CGA 16:10 */
++    { 320,  240}, /* QVGA 4:3 */
++    { 400,  300}, /* qSVGA 4:3 */
++    { 480,  320}, /* HVGA 3:2 */
++    { 512,  384}, /* MAC 4:3 */
++    { 640,  360}, /* nHD 16:9 */
++    { 640,  400}, /* VESA-0100h 16:10 */
++    { 640,  480}, /* VGA 4:3 */
++    { 720,  480}, /* WVGA 3:2 */
++    { 720,  576}, /* PAL 5:4 */
++    { 768,  480}, /* WVGA 16:10 */
++    { 768,  576}, /* PAL* 4:3 */
++    { 800,  600}, /* SVGA 4:3 */
++    { 854,  480}, /* FWVGA 16:9 */
++    { 960,  540}, /* qHD 16:9 */
++    { 960,  640}, /* DVGA 3:2 */
++    {1024,  576}, /* WSVGA 16:9 */
++    {1024,  640}, /* WSVGA 16:10 */
++    {1024,  768}, /* XGA 4:3 */
++    {1152,  864}, /* XGA+ 4:3 */
++    {1280,  720}, /* HD 16:9 */
++    {1280,  768}, /* WXGA 5:3 */
++    {1280,  800}, /* WXGA 16:10 */
++    {1280,  960}, /* SXGA- 4:3 */
++    {1280, 1024}, /* SXGA 5:4 */
++    {1366,  768}, /* FWXGA 16:9 */
++    {1400, 1050}, /* SXGA+ 4:3 */
++    {1440,  900}, /* WSXGA 16:10 */
++    {1600,  900}, /* HD+ 16:9 */
++    {1600, 1200}, /* UXGA 4:3 */
++    {1680, 1050}, /* WSXGA+ 16:10 */
++    {1920, 1080}, /* FHD 16:9 */
++    {1920, 1200}, /* WUXGA 16:10 */
++    {2048, 1152}, /* QWXGA 16:9 */
++    {2048, 1536}, /* QXGA 4:3 */
++    {2560, 1440}, /* QHD 16:9 */
++    {2560, 1600}, /* WQXGA 16:10 */
++    {2560, 2048}, /* QSXGA 5:4 */
++    {2880, 1620}, /* 3K 16:9 */
++    {3200, 1800}, /* QHD+ 16:9 */
++    {3200, 2400}, /* QUXGA 4:3 */
++    {3840, 2160}, /* 4K 16:9 */
++    {3840, 2400}, /* WQUXGA 16:10 */
++    {5120, 2880}, /* 5K 16:9 */
++    {7680, 4320}, /* 8K 16:9 */
 +};
-+
-+static CRITICAL_SECTION output_names_section;
-+static CRITICAL_SECTION_DEBUG critsect_debug =
-+{
-+    0, 0, &output_names_section,
-+    { &critsect_debug.ProcessLocksList, &critsect_debug.ProcessLocksList },
-+      0, 0, { (DWORD_PTR)(__FILE__ ": output_names_section") }
-+};
-+static CRITICAL_SECTION output_names_section = { &critsect_debug, -1, 0, 0, 0, 0 };
-+
-+static struct wl_array output_names = { 0, 0, 0 };
 +
 +/**********************************************************************
 + *          Output handling
 + */
++
++/* Compare mode with the set of provided mode parameters and return -1 if the
++ * mode compares less than the parameters, 0 if the mode compares equal to the
++ * parameters, and 1 if the mode compares greater than the parameters.
++ *
++ * The comparison is based on comparing the width, height, bpp and refresh
++ * in that order.
++ */
++static int wayland_output_mode_cmp(struct wayland_output_mode *mode,
++                                   int32_t width, int32_t height,
++                                   int32_t refresh, int bpp)
++{
++    if (mode->width < width) return -1;
++    if (mode->width > width) return 1;
++    if (mode->height < height) return -1;
++    if (mode->height > height) return 1;
++    if (mode->bpp < bpp) return -1;
++    if (mode->bpp > bpp) return 1;
++    if (mode->refresh < refresh) return -1;
++    if (mode->refresh > refresh) return 1;
++    return 0;
++}
 +
 +static void wayland_output_add_mode(struct wayland_output *output,
 +                                    int32_t width, int32_t height,
@@ -9416,12 +9566,14 @@ index 00000000000..a0dc10a14ce
 +                                    BOOL current, BOOL native)
 +{
 +    struct wayland_output_mode *mode;
++    struct wl_list *insert_after_link = output->mode_list.prev;
 +
-+    /* Update mode if already in list */
++    /* Update mode if it's already in list, otherwise find the insertion point
++     * to maintain the sorted order. */
 +    wl_list_for_each(mode, &output->mode_list, link)
 +    {
-+        if (mode->width == width && mode->height == height &&
-+            mode->refresh == refresh && mode->bpp == bpp)
++        int cmp = wayland_output_mode_cmp(mode, width, height, refresh, bpp);
++        if (cmp == 0) /* mode == new */
 +        {
 +            /* Upgrade modes from virtual to native, never the reverse. */
 +            if (native) mode->native = TRUE;
@@ -9431,6 +9583,11 @@ index 00000000000..a0dc10a14ce
 +                output->current_wine_mode = mode;
 +            }
 +            return;
++        }
++        else if (cmp == 1) /* mode > new */
++        {
++            insert_after_link = mode->link.prev;
++            break;
 +        }
 +    }
 +
@@ -9448,7 +9605,7 @@ index 00000000000..a0dc10a14ce
 +        output->current_wine_mode = mode;
 +    }
 +
-+    wl_list_insert(&output->mode_list, &mode->link);
++    wl_list_insert(insert_after_link, &mode->link);
 +}
 +
 +static void wayland_output_add_mode_all_bpp(struct wayland_output *output,
@@ -9457,41 +9614,8 @@ index 00000000000..a0dc10a14ce
 +                                            BOOL native)
 +{
 +    wayland_output_add_mode(output, width, height, refresh, 32, current, native);
-+    wayland_output_add_mode(output, width, height, refresh, 16, FALSE, FALSE);
-+    wayland_output_add_mode(output, width, height, refresh, 8, FALSE, FALSE);
-+}
-+
-+/* The id of a name is its index in the output_names array + 1 + 0xd1d10000.
-+ * This peculiar id is used for easier differentiation and debugging. */
-+static uint32_t wayland_output_name_get_id(const char *output_name)
-+{
-+    uint32_t id = 0;
-+    char **name;
-+
-+    if (!output_name) return 0;
-+
-+    EnterCriticalSection(&output_names_section);
-+
-+    wl_array_for_each(name, &output_names)
-+    {
-+        id++;
-+        if (*name && !strcmp(*name, output_name))
-+            goto out;
-+    }
-+
-+    id++;
-+
-+    name = wl_array_add(&output_names, sizeof(const char*));
-+    if (!name || !(*name = strdup(output_name)))
-+    {
-+        ERR("Failed to allocate memory for output name");
-+        id = 0;
-+        goto out;
-+    }
-+
-+out:
-+    LeaveCriticalSection(&output_names_section);
-+    return id > 0 ? id + 0xd1d10000 : 0;
++    wayland_output_add_mode(output, width, height, refresh, 16, FALSE, native);
++    wayland_output_add_mode(output, width, height, refresh, 8, FALSE, native);
 +}
 +
 +static void wayland_output_add_default_modes(struct wayland_output *output)
@@ -9655,7 +9779,10 @@ index 00000000000..a0dc10a14ce
 +              o->x, o->y, o->current_mode->width, o->current_mode->height);
 +    }
 +
-+    wayland_init_display_devices(output->wayland);
++    if (wayland_is_process(output->wayland))
++        wayland_init_display_devices();
++    else
++        wayland_update_outputs_from_process(output->wayland);
 +}
 +
 +static void output_handle_geometry(void *data, struct wl_output *wl_output,
@@ -9752,7 +9879,6 @@ index 00000000000..a0dc10a14ce
 +
 +    free(output->name);
 +    output->name = strdup(name);
-+    output->id = wayland_output_name_get_id(output->name);
 +}
 +
 +static void zxdg_output_v1_handle_description(void *data,
@@ -9803,7 +9929,6 @@ index 00000000000..a0dc10a14ce
 +    {
 +        snprintf(output->name, 20, "WaylandOutput%d",
 +                 wayland->next_fallback_output_id++);
-+        output->id = wayland_output_name_get_id(output->name);
 +    }
 +    else
 +    {
@@ -9855,6 +9980,38 @@ index 00000000000..a0dc10a14ce
 +}
 +
 +/**********************************************************************
++ *          wayland_update_outputs_from_process
++ *
++ * Update the information in the outputs of this instance, using the
++ * information in the process wayland instance.
++ */
++void wayland_update_outputs_from_process(struct wayland *wayland)
++{
++    struct wayland_output *output;
++    struct wayland_output *process_output;
++    struct wayland *process_wayland = wayland_process_acquire();
++
++    TRACE("wayland=%p process_wayland=%p\n", wayland, process_wayland);
++
++    wl_list_for_each(output, &wayland->output_list, link)
++    {
++        wl_list_for_each(process_output, &process_wayland->output_list, link)
++        {
++            if (!strcmp(output->name, process_output->name))
++            {
++                lstrcpyW(output->wine_name, process_output->wine_name);
++                wayland_output_set_wine_mode(output,
++                                             process_output->current_wine_mode->width,
++                                             process_output->current_wine_mode->height);
++                break;
++            }
++        }
++    }
++
++    wayland_process_release();
++}
++
++/**********************************************************************
 + *          wayland_output_get_by_wine_name
 + *
 + *  Returns the wayland_output with the specified Wine name (or NULL
@@ -9875,26 +10032,6 @@ index 00000000000..a0dc10a14ce
 +}
 +
 +/**********************************************************************
-+ *          wayland_output_get_by_id
-+ *
-+ *  Returns the wayland_output with the specified id (or NULL
-+ *  if not present).
-+ */
-+struct wayland_output *wayland_output_get_by_id(struct wayland *wayland,
-+                                                uint32_t output_id)
-+{
-+    struct wayland_output *output;
-+
-+    wl_list_for_each(output, &wayland->output_list, link)
-+    {
-+        if (output->id == output_id)
-+            return output;
-+    }
-+
-+    return NULL;
-+}
-+
-+/**********************************************************************
 + *          wayland_output_set_wine_mode
 + *
 + * Set the current wine mode for the specified output.
@@ -9903,8 +10040,7 @@ index 00000000000..a0dc10a14ce
 +{
 +    struct wayland_output_mode *output_mode;
 +
-+    TRACE("output->name=%s (id=0x%x) width=%d height=%d\n",
-+          output->name, output->id, width, height);
++    TRACE("output->name=%s width=%d height=%d\n", output->name, width, height);
 +
 +    /* We always use 32bpp modes since that's the only one we really
 +     * support. */
@@ -10535,10 +10671,10 @@ index 00000000000..64a27a9dc4d
 +}
 diff --git a/dlls/winewayland.drv/wayland_surface.c b/dlls/winewayland.drv/wayland_surface.c
 new file mode 100644
-index 00000000000..373fefe341a
+index 00000000000..d3958497f54
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland_surface.c
-@@ -0,0 +1,1511 @@
+@@ -0,0 +1,1510 @@
 +/*
 + * Wayland surfaces
 + *
@@ -10712,8 +10848,7 @@ index 00000000000..373fefe341a
 +
 +    if (!output || output->wayland != surface->wayland) return;
 +
-+    TRACE("hwnd=%p output->name=%s output->id=0x%x\n",
-+          surface->hwnd, output->name, output->id);
++    TRACE("hwnd=%p output->name=%s\n", surface->hwnd, output->name);
 +
 +    ref = heap_alloc_zero(sizeof(*ref));
 +    if (!ref) { ERR("memory allocation failed"); return; }
@@ -10734,8 +10869,7 @@ index 00000000000..373fefe341a
 +
 +    if (!output || output->wayland != surface->wayland) return;
 +
-+    TRACE("hwnd=%p output->name=%s output->id=0x%x\n",
-+          surface->hwnd, output->name, output->id);
++    TRACE("hwnd=%p output->name=%s\n", surface->hwnd, output->name);
 +
 +    wayland_surface_leave_output(surface, output);
 +}
@@ -11222,6 +11356,7 @@ index 00000000000..373fefe341a
 +
 +    glvk->hwnd = surface->hwnd;
 +    glvk->main_output = surface->main_output;
++    glvk->wine_output = surface->wine_output;
 +    wl_surface_set_buffer_scale(glvk->wl_surface, wayland_surface_get_buffer_scale(surface));
 +
 +    return glvk;
@@ -11908,10 +12043,10 @@ index 00000000000..373fefe341a
 +    /* Don't update non-toplevels. */
 +    if (surface->parent) return;
 +
-+    TRACE("surface=%p output->name=%s (id=0x%x) => output->name=%s (id=0x%x)\n",
-+          surface, surface->main_output ? surface->main_output->name : NULL,
-+          surface->main_output ? surface->main_output->id : 0,
-+          output ? output->name : NULL, output ? output->id : 0);
++    TRACE("surface=%p output->name=%s => output->name=%s\n",
++          surface,
++          surface->main_output ? surface->main_output->name : NULL,
++          output ? output->name : NULL);
 +
 +    if (surface->main_output != output)
 +    {
@@ -12052,10 +12187,10 @@ index 00000000000..373fefe341a
 +}
 diff --git a/dlls/winewayland.drv/waylanddrv.h b/dlls/winewayland.drv/waylanddrv.h
 new file mode 100644
-index 00000000000..4748db26971
+index 00000000000..a4d8256ce82
 --- /dev/null
 +++ b/dlls/winewayland.drv/waylanddrv.h
-@@ -0,0 +1,516 @@
+@@ -0,0 +1,521 @@
 +/*
 + * Wayland driver
 + *
@@ -12101,19 +12236,21 @@ index 00000000000..4748db26971
 +extern struct wl_display *process_wl_display;
 +
 +/**********************************************************************
-+ *          Internal messages and data
-+ */
++  *          Internal messages and data
++  */
 +
 +enum wayland_window_message
 +{
-+    WM_WAYLAND_SET_CURSOR = 0x80001000,
-+    WM_WAYLAND_CONFIGURE = 0x80001001,
-+    WM_WAYLAND_STATE_UPDATE = 0x80001002,
-+    WM_WAYLAND_SURFACE_OUTPUT_CHANGE = 0x80001003,
-+    WM_WAYLAND_MODE_CHANGE = 0x80001004,
-+    WM_WAYLAND_WINDOW_SURFACE_FLUSH = 0x80001005,
-+    WM_WAYLAND_POINTER_CONFINEMENT_UPDATE = 0x80001006,
-+    WM_WAYLAND_CLIPBOARD_WINDOW_CREATE = 0x80001007,
++    WM_WAYLAND_BROADCAST_DISPLAY_CHANGE = 0x80001000,
++    WM_WAYLAND_SET_CURSOR = 0x80001001,
++    WM_WAYLAND_QUERY_SURFACE_MAPPED = 0x80001002,
++    WM_WAYLAND_CONFIGURE = 0x80001003,
++    WM_WAYLAND_STATE_UPDATE = 0x80001004,
++    WM_WAYLAND_SURFACE_OUTPUT_CHANGE = 0x80001005,
++    WM_WAYLAND_MONITOR_CHANGE = 0x80001006,
++    WM_WAYLAND_WINDOW_SURFACE_FLUSH = 0x80001007,
++    WM_WAYLAND_POINTER_CONFINEMENT_UPDATE = 0x80001008,
++    WM_WAYLAND_CLIPBOARD_WINDOW_CREATE = 0x80001009,
 +};
 +
 +enum wayland_configure_flags
@@ -12265,7 +12402,6 @@ index 00000000000..4748db26971
 +    double wine_scale;
 +    char *name;
 +    WCHAR wine_name[128];
-+    uint32_t id;
 +    uint32_t global_id;
 +};
 +
@@ -12374,7 +12510,10 @@ index 00000000000..4748db26971
 +BOOL wayland_process_init(void);
 +BOOL wayland_init(struct wayland *wayland);
 +void wayland_deinit(struct wayland *wayland);
-+void wayland_init_display_devices(struct wayland *wayland);
++BOOL wayland_is_process(struct wayland *wayland);
++struct wayland *wayland_process_acquire(void);
++void wayland_process_release(void);
++void wayland_init_display_devices(void);
 +void wayland_read_options_from_registry(struct wayland *wayland);
 +
 +/**********************************************************************
@@ -12384,13 +12523,14 @@ index 00000000000..4748db26971
 +BOOL wayland_output_create(struct wayland *wayland, uint32_t id, uint32_t version);
 +void wayland_output_destroy(struct wayland_output *output);
 +void wayland_output_use_xdg_extension(struct wayland_output *output);
++void wayland_update_outputs_from_process(struct wayland *wayland);
 +struct wayland_output *wayland_output_get_by_wine_name(struct wayland *wayland,
 +                                                       LPCWSTR wine_name);
 +struct wayland_output *wayland_output_get_by_id(struct wayland *wayland,
 +                                                uint32_t id);
 +void wayland_output_set_wine_mode(struct wayland_output *output,
 +                                  int width, int height);
-+void wayland_notify_wine_mode_change(uint32_t output_id, int width, int height);
++void wayland_notify_wine_monitor_change(void);
 +
 +/**********************************************************************
 + *          Wayland event dispatch
@@ -12747,10 +12887,10 @@ index 00000000000..195b01ed04b
 +}
 diff --git a/dlls/winewayland.drv/window.c b/dlls/winewayland.drv/window.c
 new file mode 100644
-index 00000000000..271046b438b
+index 00000000000..a2db213032e
 --- /dev/null
 +++ b/dlls/winewayland.drv/window.c
-@@ -0,0 +1,1452 @@
+@@ -0,0 +1,1442 @@
 +/*
 + * Window related functions
 + *
@@ -12819,8 +12959,6 @@ index 00000000000..271046b438b
 +    BOOL           handling_wayland_configure_event;
 +    /* the configure flags for the configure event we are handling */
 +    enum wayland_configure_flags wayland_configure_event_flags;
-+    /* whether this window has been deactivated by wayland after minimization */
-+    BOOL deactivated_after_minimization;
 +    /* whether this window is visible */
 +    BOOL           visible;
 +    /* Save previous state to be able to decide when to recreate wayland surface */
@@ -13794,7 +13932,6 @@ index 00000000000..271046b438b
 +    BOOL needs_move_to_origin;
 +    int origin_x, origin_y;
 +    UINT swp_flags;
-+    BOOL needs_restore = FALSE;
 +    BOOL needs_enter_size_move = FALSE;
 +    BOOL needs_exit_size_move = FALSE;
 +
@@ -13820,36 +13957,6 @@ index 00000000000..271046b438b
 +        return 0;
 +    }
 +
-+    if (IsIconic(hwnd) &&
-+        !(wsurface->pending.configure_flags & WAYLAND_CONFIGURE_FLAG_ACTIVATED))
-+    {
-+        data->deactivated_after_minimization = TRUE;
-+    }
-+
-+    /* Restore a minimized window if it is activated. We only do this after we
-+     * have seen a deactivation event for the surface or if the flags indicate
-+     * an explicit non-minimized state, to ensure we don't restore prematurely,
-+     * e.g., while minimization is still in progress. */
-+    if (IsIconic(hwnd) &&
-+        (wsurface->pending.configure_flags & WAYLAND_CONFIGURE_FLAG_ACTIVATED) &&
-+        (data->deactivated_after_minimization ||
-+         (wsurface->pending.configure_flags &
-+          (WAYLAND_CONFIGURE_FLAG_MAXIMIZED|WAYLAND_CONFIGURE_FLAG_FULLSCREEN))))
-+    {
-+        needs_restore = TRUE;
-+        data->deactivated_after_minimization = FALSE;
-+        /* If allowed, ignore the restoration size provided by wayland, since
-+         * it may cause wayland_win_data.restore_rect to be set and mess up our
-+         * own tracking.
-+         */
-+        if (!(wsurface->pending.configure_flags &
-+              (WAYLAND_CONFIGURE_FLAG_MAXIMIZED|WAYLAND_CONFIGURE_FLAG_FULLSCREEN)))
-+        {
-+            wsurface->pending.width = 0;
-+            wsurface->pending.height = 0;
-+        }
-+    }
-+
 +    wsurface->pending.processed = TRUE;
 +
 +    data->wayland_configure_event_flags = wsurface->pending.configure_flags;
@@ -13863,7 +13970,7 @@ index 00000000000..271046b438b
 +    if (width == 0)
 +    {
 +        int ignore;
-+        if (!IsIconic(hwnd) || needs_restore)
++        if (!IsIconic(hwnd))
 +            width = data->restore_rect.right - data->restore_rect.left;
 +        if (width == 0)
 +            width = data->window_rect.right - data->window_rect.left;
@@ -13874,7 +13981,7 @@ index 00000000000..271046b438b
 +    if (height == 0)
 +    {
 +        int ignore;
-+        if (!IsIconic(hwnd) || needs_restore)
++        if (!IsIconic(hwnd))
 +            height = data->restore_rect.bottom - data->restore_rect.top;
 +        if (height == 0)
 +            height = data->window_rect.bottom - data->window_rect.top;
@@ -13933,12 +14040,6 @@ index 00000000000..271046b438b
 +    }
 +
 +    wayland_win_data_release(data);
-+
-+    if (needs_restore)
-+    {
-+        ShowOwnedPopups(hwnd, TRUE);
-+        ShowWindow(hwnd, SW_RESTORE);
-+    }
 +
 +    if (needs_enter_size_move)
 +        SendMessageW(hwnd, WM_ENTERSIZEMOVE, 0, 0);
@@ -14048,6 +14149,27 @@ index 00000000000..271046b438b
 +    wayland_surface_for_hwnd_unlock(wsurface);
 +}
 +
++static void handle_wm_wayland_monitor_change(struct wayland *wayland)
++{
++    struct wayland_surface *surface, *tmp;
++
++    wayland_update_outputs_from_process(wayland);
++
++    /* Update the state of all surfaces tracked by the wayland thread instance,
++     * in case any surface was affected by the monitor changes (e.g., gained or
++     * lost the fullscreen state). We use the safe iteration variant since a
++     * state update may cause the surface to be recreated. */
++    wl_list_for_each_safe(surface, tmp, &wayland->toplevel_list, link)
++    {
++        struct wayland_win_data *data = wayland_win_data_get(surface->hwnd);
++        if (data)
++        {
++            update_wayland_state(data);
++            wayland_win_data_release(data);
++        }
++    }
++}
++
 +/**********************************************************************
 + *           WAYLAND_WindowMessage
 + */
@@ -14057,9 +14179,22 @@ index 00000000000..271046b438b
 +
 +    switch (msg)
 +    {
++    case WM_WAYLAND_BROADCAST_DISPLAY_CHANGE:
++        SendMessageTimeoutW(HWND_BROADCAST, WM_DISPLAYCHANGE, wp, lp,
++                            SMTO_ABORTIFHUNG, 2000, NULL);
++        break;
 +    case WM_WAYLAND_SET_CURSOR:
 +        wayland_pointer_update_cursor_from_win32(&thread_wayland()->pointer,
 +                                                 (HCURSOR)lp);
++        break;
++    case WM_WAYLAND_QUERY_SURFACE_MAPPED:
++        {
++            LRESULT res;
++            struct wayland_surface *wayland_surface = wayland_surface_for_hwnd_lock(hwnd);
++            res = wayland_surface ? wayland_surface->mapped : 0;
++            wayland_surface_for_hwnd_unlock(wayland_surface);
++            return res;
++        }
 +        break;
 +    case WM_WAYLAND_CONFIGURE:
 +        /* While resizing, configure events can come continuously and due to the
@@ -14105,13 +14240,8 @@ index 00000000000..271046b438b
 +    case WM_WAYLAND_SURFACE_OUTPUT_CHANGE:
 +        handle_wm_wayland_surface_output_change(hwnd);
 +        break;
-+    case WM_WAYLAND_MODE_CHANGE:
-+        {
-+            struct wayland_output *output =
-+                wayland_output_get_by_id(thread_wayland(), wp);
-+            if (output)
-+                wayland_output_set_wine_mode(output, LOWORD(lp), HIWORD(lp));
-+        }
++    case WM_WAYLAND_MONITOR_CHANGE:
++        handle_wm_wayland_monitor_change(thread_wayland());
 +        break;
 +    case WM_WAYLAND_WINDOW_SURFACE_FLUSH:
 +        {
@@ -14987,10 +15117,10 @@ index 00000000000..2a33c7ba564
 +    return utf8_len;
 +}
 diff --git a/include/config.h.in b/include/config.h.in
-index bd9e37235cd..24c1d8dbc39 100644
+index 09cf7c923e3..18cef0896da 100644
 --- a/include/config.h.in
 +++ b/include/config.h.in
-@@ -790,6 +790,12 @@
+@@ -775,6 +775,12 @@
  /* Define to 1 if you have the <valgrind/valgrind.h> header file. */
  #undef HAVE_VALGRIND_VALGRIND_H
  
@@ -15003,7 +15133,7 @@ index bd9e37235cd..24c1d8dbc39 100644
  /* Define to 1 if you have the <X11/extensions/shape.h> header file. */
  #undef HAVE_X11_EXTENSIONS_SHAPE_H
  
-@@ -844,6 +850,9 @@
+@@ -829,6 +835,9 @@
  /* Define if you have the XKB extension */
  #undef HAVE_XKB
  
@@ -15014,10 +15144,10 @@ index bd9e37235cd..24c1d8dbc39 100644
  #undef HAVE_XRENDERCREATELINEARGRADIENT
  
 diff --git a/include/wine/gdi_driver.h b/include/wine/gdi_driver.h
-index bdbb05afef0..af9add33de3 100644
+index 994b082d5b4..d5e70161a40 100644
 --- a/include/wine/gdi_driver.h
 +++ b/include/wine/gdi_driver.h
-@@ -213,6 +213,7 @@ struct window_surface
+@@ -214,6 +214,7 @@ struct window_surface
      struct list                        entry; /* entry in global list managed by user32 */
      LONG                               ref;   /* reference count */
      RECT                               rect;  /* constant, no locking needed */
@@ -15040,7 +15170,7 @@ index 898c9034e33..8aa85a37c94 100644
  /* Uxtheme hook functions and struct */
  
 diff --git a/programs/explorer/desktop.c b/programs/explorer/desktop.c
-index 2ba276f52cb..f9f7c708bd5 100644
+index 6d577dd0fd1..e1dce4953e2 100644
 --- a/programs/explorer/desktop.c
 +++ b/programs/explorer/desktop.c
 @@ -39,7 +39,7 @@ WINE_DEFAULT_DEBUG_CHANNEL(explorer);
@@ -15053,10 +15183,10 @@ index 2ba276f52cb..f9f7c708bd5 100644
  static BOOL using_root;
  
 diff --git a/tools/makedep.c b/tools/makedep.c
-index a7a7924a20b..becba9cd8de 100644
+index 9a9e443456e..d65ea8ad4ff 100644
 --- a/tools/makedep.c
 +++ b/tools/makedep.c
-@@ -164,6 +164,7 @@ static const char *msgfmt;
+@@ -165,6 +165,7 @@ static const char *msgfmt;
  static const char *ln_s;
  static const char *sed_cmd;
  static const char *delay_load_flag;
@@ -15064,7 +15194,7 @@ index a7a7924a20b..becba9cd8de 100644
  
  struct makefile
  {
-@@ -493,6 +494,15 @@ static char *replace_filename( const char *path, const char *name )
+@@ -494,6 +495,15 @@ static char *replace_filename( const char *path, const char *name )
      return ret;
  }
  
@@ -15080,7 +15210,7 @@ index a7a7924a20b..becba9cd8de 100644
  
  /*******************************************************************
   *         strarray_replace_extension
-@@ -1322,6 +1332,9 @@ static struct file *open_include_file( const struct makefile *make, struct incl_
+@@ -1341,6 +1351,9 @@ static struct file *open_include_file( const struct makefile *make, struct incl_
          return file;
      }
  
@@ -15090,7 +15220,7 @@ index a7a7924a20b..becba9cd8de 100644
      /* check for extra targets */
      if (strarray_exists( &make->extra_targets, pFile->name ))
      {
-@@ -1816,6 +1829,19 @@ static void add_generated_sources( struct makefile *make )
+@@ -1834,6 +1847,19 @@ static void add_generated_sources( struct makefile *make )
              strarray_addall_uniq( &make->extra_imports,
                                    get_expanded_file_local_var( make, obj, "IMPORTS" ));
          }
@@ -15110,7 +15240,7 @@ index a7a7924a20b..becba9cd8de 100644
      }
      if (make->testdll)
      {
-@@ -2981,6 +3007,15 @@ static void output_source_spec( struct makefile *make, struct incl_file *source,
+@@ -3036,6 +3062,15 @@ static void output_source_spec( struct makefile *make, struct incl_file *source,
      output( "\n" );
  }
  
@@ -15126,7 +15256,7 @@ index a7a7924a20b..becba9cd8de 100644
  
  /*******************************************************************
   *         output_source_default
-@@ -3095,6 +3130,7 @@ static const struct
+@@ -3150,6 +3185,7 @@ static const struct
      { "in", output_source_in },
      { "x", output_source_x },
      { "spec", output_source_spec },
@@ -15134,7 +15264,7 @@ index a7a7924a20b..becba9cd8de 100644
      { NULL, output_source_default }
  };
  
-@@ -3993,6 +4029,7 @@ static void output_silent_rules(void)
+@@ -4042,6 +4078,7 @@ static void output_silent_rules(void)
          "MSG",
          "SED",
          "TEST",
@@ -15142,7 +15272,7 @@ index a7a7924a20b..becba9cd8de 100644
          "WIDL",
          "WMC",
          "WRC"
-@@ -4085,6 +4122,7 @@ static void load_sources( struct makefile *make )
+@@ -4134,6 +4171,7 @@ static void load_sources( struct makefile *make )
          "IN_SRCS",
          "PO_SRCS",
          "MANPAGES",
@@ -15150,7 +15280,7 @@ index a7a7924a20b..becba9cd8de 100644
          NULL
      };
      const char **var;
-@@ -4314,6 +4352,7 @@ int main( int argc, char *argv[] )
+@@ -4363,6 +4401,7 @@ int main( int argc, char *argv[] )
      msgfmt             = get_expanded_make_variable( top_makefile, "MSGFMT" );
      sed_cmd            = get_expanded_make_variable( top_makefile, "SED_CMD" );
      ln_s               = get_expanded_make_variable( top_makefile, "LN_S" );

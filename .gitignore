@@ -26,6 +26,7 @@ wine-tkg-git/wine-tkg-userpatches/old*/
 wine-tkg-git/dxvk/
 wine-tkg-git/d9vk/
 wine-tkg-git/non-makepkg-builds/
+wine-tkg-git/builds/
 proton-tkg/Proton/
 proton-tkg/liberation-fonts/
 proton-tkg/vkd3d-fork-build/
