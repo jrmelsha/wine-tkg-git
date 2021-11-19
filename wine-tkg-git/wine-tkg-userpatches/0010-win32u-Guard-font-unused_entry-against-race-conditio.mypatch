@@ -1,0 +1,65 @@
+From e96fa26cd1fc44667759e73a368d60041d99db0f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?R=C3=A9mi=20Bernon?= <rbernon@codeweavers.com>
+Date: Fri, 19 Nov 2021 12:23:38 +0100
+Subject: [PATCH 1/2] win32u: Guard font unused_entry against race condition.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+There is a race condition otherwise between release_gdi_font and
+find_cached_gdi_font, leading to invalid memory access:
+
+One thread calling release_gdi_font may decrement refcount to 0,
+then try to enter font_lock. At the same time, another thread may be
+calling find_cached_gdi_font through select_font, holding the font_lock.
+
+This second thread would find refcount set to 0, and then try to remove
+unused_entry from its list, although it hasn't been added yet to the
+unused list.
+
+Signed-off-by: Rémi Bernon <rbernon@codeweavers.com>
+---
+ dlls/win32u/font.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/dlls/win32u/font.c b/dlls/win32u/font.c
+index d2f61526540..f9a0359e92c 100644
+--- a/dlls/win32u/font.c
++++ b/dlls/win32u/font.c
+@@ -2576,22 +2576,24 @@ static struct gdi_font *find_cached_gdi_font( const LOGFONTW *lf, const FMAT2 *m
+ static void release_gdi_font( struct gdi_font *font )
+ {
+     if (!font) return;
+-    if (--font->refcount) return;
+ 
+     TRACE( "font %p\n", font );
+ 
+     /* add it to the unused list */
+     pthread_mutex_lock( &font_lock );
+-    list_add_head( &unused_gdi_font_list, &font->unused_entry );
+-    if (unused_font_count > UNUSED_CACHE_SIZE)
++    if (!--font->refcount)
+     {
+-        font = LIST_ENTRY( list_tail( &unused_gdi_font_list ), struct gdi_font, unused_entry );
+-        TRACE( "freeing %p\n", font );
+-        list_remove( &font->entry );
+-        list_remove( &font->unused_entry );
+-        free_gdi_font( font );
++        list_add_head( &unused_gdi_font_list, &font->unused_entry );
++        if (unused_font_count > UNUSED_CACHE_SIZE)
++        {
++            font = LIST_ENTRY( list_tail( &unused_gdi_font_list ), struct gdi_font, unused_entry );
++            TRACE( "freeing %p\n", font );
++            list_remove( &font->entry );
++            list_remove( &font->unused_entry );
++            free_gdi_font( font );
++        }
++        else unused_font_count++;
+     }
+-    else unused_font_count++;
+     pthread_mutex_unlock( &font_lock );
+ }
+ 
+-- 
+2.33.1
+
