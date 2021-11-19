@@ -524,6 +524,18 @@ else
   fi
 fi
 
+# Revert a9b5bb3 which is breaking graphics drivers
+if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor a9b5bb326a1514e2c4185633ab34b22c9bbc9863 HEAD ); then
+  warning "Hotfix: Revert a9b5bb3 which is breaking graphics drivers"
+  _hotfix_mainlinereverts+=(a9b5bb326a1514e2c4185633ab34b22c9bbc9863)
+fi
+
+# Revert e5d3783 (winspool.drv: Implement Wow64 entry points in the Unix library. ) as it seems to prevent prefix creation on some machines
+if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor e5d37832ee66d011ba572a9b571e9fb44a7b2b4d HEAD && ! git merge-base --is-ancestor ff0f5e40249037c2456e43bf901633097d7ae430 HEAD ); then
+  warning "Hotfix: Revert e5d3783, breaking prefix creation for some"
+  _hotfix_mainlinereverts+=(e5d37832ee66d011ba572a9b571e9fb44a7b2b4d)
+fi
+
 # Disable vr support patchset for 5.20-6.12
 if ( cd "${srcdir}"/"${_winesrcdir}" && ! git merge-base --is-ancestor 12d33d21d33788fd46898ea42e9592d33b6e7c8e HEAD ); then
   _steamvr_support="false"
@@ -890,7 +902,9 @@ fi
 if [ "$_use_staging" = "true" ] && ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 4de079bb7247c8b849558c0f27a280a9546c5570 HEAD ); then
   if ( cd "${srcdir}"/"${_stgsrcdir}" && git merge-base --is-ancestor 66c0fdc1590e00ce471a6c55f4d97ededd1f5aae HEAD ); then
     warning "Hotfix: Protonify staging syscall emu"
-    if ( cd "${srcdir}"/"${_stgsrcdir}" && git merge-base --is-ancestor feb91195ff12074276ea3b83047d4c8f2c70d738 HEAD ); then
+    if ( cd "${srcdir}"/"${_stgsrcdir}" && git merge-base --is-ancestor 0ee2ac8499bbde23ad14bb0ffe125016faccd301 HEAD ); then
+      _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/syscall_emu/protonify_stg_syscall_emu-008)
+    elif ( cd "${srcdir}"/"${_stgsrcdir}" && git merge-base --is-ancestor feb91195ff12074276ea3b83047d4c8f2c70d738 HEAD ); then
       _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/syscall_emu/protonify_stg_syscall_emu-007)
     elif ( cd "${srcdir}"/"${_stgsrcdir}" && git merge-base --is-ancestor 24319dc308046ed520dd2cb92f57d54f96ebec21 HEAD ); then
       _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/syscall_emu/protonify_stg_syscall_emu-006)
