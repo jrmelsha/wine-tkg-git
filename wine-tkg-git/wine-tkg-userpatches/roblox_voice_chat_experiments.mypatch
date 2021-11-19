@@ -1,0 +1,26 @@
+diff --git a/dlls/mmdevapi/audiovolume.c b/dlls/mmdevapi/audiovolume.c
+index 6f403cf348a..434886a94f9 100644
+--- a/dlls/mmdevapi/audiovolume.c
++++ b/dlls/mmdevapi/audiovolume.c
+@@ -116,7 +116,9 @@ static HRESULT WINAPI AEV_GetChannelCount(IAudioEndpointVolumeEx *iface, UINT *c
+     if (!count)
+         return E_POINTER;
+     FIXME("stub\n");
+-    return E_NOTIMPL;
++    FIXME("returning fake value\n");
++    *count = 2;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI AEV_SetMasterVolumeLevel(IAudioEndpointVolumeEx *iface, float leveldb, const GUID *ctx)
+@@ -253,7 +255,9 @@ static HRESULT WINAPI AEV_QueryHardwareSupport(IAudioEndpointVolumeEx *iface, DW
+     if (!mask)
+         return E_POINTER;
+     FIXME("stub\n");
+-    return E_NOTIMPL;
++    FIXME("returning fake value\n");
++    *mask = 3;
++    return S_OK;
+ }
+ 
+ static HRESULT WINAPI AEV_GetVolumeRange(IAudioEndpointVolumeEx *iface, float *mindb, float *maxdb, float *inc)
