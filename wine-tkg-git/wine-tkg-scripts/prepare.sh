@@ -2048,7 +2048,7 @@ EOM
 	fi
 
 	if [ "$_EXTERNAL_INSTALL" = "proton" ] && [ "$_unfrog" != "true" ] && ! git merge-base --is-ancestor 74dc0c5df9c3094352caedda8ebe14ed2dfd615e HEAD || ([ "$_protonify" = "true" ] && git merge-base --is-ancestor 74dc0c5df9c3094352caedda8ebe14ed2dfd615e HEAD); then
-	  if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor d8be85863fedf6982944d06ebd1ce5904cb3d4e1 HEAD ); then
+	  if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor e843605b238a754c819f0a1f80242ee7f35deda1 HEAD ); then
 	    if [ "$_use_staging" = "true" ]; then
 	      if ! git merge-base --is-ancestor dedd5ccc88547529ffb1101045602aed59fa0170 HEAD; then
 	        _patchname='proton-tkg-staging-rpc.patch' && _patchmsg="Using Steam-specific Proton-tkg patches (staging) 1/3" && nonuser_patcher
@@ -2138,7 +2138,11 @@ EOM
 	      fi
 	    fi
 	  else
-	    if git merge-base --is-ancestor e7b0b35d57d3567d6b6891beaf3241179a926ad6 HEAD; then
+	    if git merge-base --is-ancestor d8be85863fedf6982944d06ebd1ce5904cb3d4e1 HEAD; then
+	      _lastcommit="e843605"
+	      _rpc="1"
+	      _stmbits="1"
+	    elif git merge-base --is-ancestor e7b0b35d57d3567d6b6891beaf3241179a926ad6 HEAD; then
 	      _lastcommit="d8be858"
 	      _rpc="1"
 	      _stmbits="1"
@@ -2570,7 +2574,7 @@ EOM
 	    _patchname='quake_champions_fix.patch' && _patchmsg="Enable Proton's Quake Champions fixes from Paul Gofman" && nonuser_patcher
 	  elif ( cd "${srcdir}"/"${_stgsrcdir}" && git merge-base --is-ancestor 66c0fdc1590e00ce471a6c55f4d97ededd1f5aae HEAD ); then
 	    _patchname='quake_champions_fix-3513a17.patch' && _patchmsg="Enable Proton's Quake Champions fixes from Paul Gofman" && nonuser_patcher
-	  elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 588d91aecf2bf8ac7e9ae1de44ddc01caae52109 HEAD ); then
+	  elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 588d91aecf2bf8ac7e9ae1de44ddc01caae52109 HEAD && ! git merge-base --is-ancestor 5c009c17b3a212c3f5b0034c465077c0c593daae HEAD ); then
 	    _patchname='quake_champions_fix-66c0fdc.patch' && _patchmsg="Enable Proton's Quake Champions fixes from Paul Gofman" && nonuser_patcher
 	  fi
 	fi
@@ -2857,7 +2861,9 @@ EOM
 
 	# Proton Battleye
 	if [ "$_proton_battleye_support" = "true" ]; then
-	  _patchname='proton_battleye.patch' && _patchmsg="Add support for Proton's Battleye runtime" && nonuser_patcher
+	  if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 12d33d21d33788fd46898ea42e9592d33b6e7c8e HEAD ); then
+	    _patchname='proton_battleye.patch' && _patchmsg="Add support for Proton's Battleye runtime" && nonuser_patcher
+	  fi
 	fi
 
 	# Proton-tkg needs to know if standard dlopen() is in use
@@ -2988,6 +2994,7 @@ _polish() {
 	  fi
 	  if [ "$_versioning_string" = "wine_srcdir" ]; then
 	    sed -i "s/\\\\\"\\\\\\\1.*\"/\\\\\"\\\\\\\1  ( ${_version_tags[*]} )\\\\\"/g" "${_versioning_path}"
+	    sed -i "s/\\\\\"\\\\\\\1.*\"/\\\\\"\\\\\\\1  ( ${_version_tags[*]} )\\\\\"/g" "${srcdir}/${_winesrcdir}/configure"
 	  else
 	    sed -i "s/\"\\\1.*\"/\"\\\1  ( ${_version_tags[*]} )\"/g" "${_versioning_path}"
 	  fi
