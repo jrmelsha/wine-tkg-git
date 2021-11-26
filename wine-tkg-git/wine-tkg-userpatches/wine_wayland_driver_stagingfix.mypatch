@@ -1,0 +1,123 @@
+From c492df5cef35cae6defcd8aeca77544acd3967a4 Mon Sep 17 00:00:00 2001
+From: DodoGTA <tcg96nougat@gmail.com>
+Date: Fri, 26 Nov 2021 19:56:47 +0200
+Subject: [PATCH] winewayland.drv: Add rawinput stuff.
+
+This should fix broken mouse issues in staging
+---
+ dlls/winewayland.drv/wayland_keyboard.c |  4 +++-
+ dlls/winewayland.drv/wayland_pointer.c  | 13 +++++++++----
+ 2 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/dlls/winewayland.drv/wayland_keyboard.c b/dlls/winewayland.drv/wayland_keyboard.c
+index 4f634e319f5..cc4eecfe35c 100644
+--- a/dlls/winewayland.drv/wayland_keyboard.c
++++ b/dlls/winewayland.drv/wayland_keyboard.c
+@@ -35,6 +35,7 @@
+ #include "waylanddrv.h"
+ 
+ #include "wine/debug.h"
++#include "wine/server.h"
+ #include "wine/unicode.h"
+ 
+ #include "winuser.h"
+@@ -207,6 +208,7 @@ static inline xkb_keycode_t linux_input_keycode_to_xkb(uint32_t key)
+ static void send_keyboard_input(HWND hwnd, WORD vkey, WORD scan, DWORD flags)
+ {
+     INPUT input;
++    RAWINPUT rawinput;
+ 
+     input.type             = INPUT_KEYBOARD;
+     input.u.ki.wVk         = vkey;
+@@ -215,7 +217,7 @@ static void send_keyboard_input(HWND hwnd, WORD vkey, WORD scan, DWORD flags)
+     input.u.ki.time        = 0;
+     input.u.ki.dwExtraInfo = 0;
+ 
+-    __wine_send_input(hwnd, &input, NULL);
++    __wine_send_input(hwnd, &input, &rawinput);
+ }
+ 
+ static WCHAR dead_xkb_keysym_to_wchar(xkb_keysym_t xkb_keysym)
+diff --git a/dlls/winewayland.drv/wayland_pointer.c b/dlls/winewayland.drv/wayland_pointer.c
+index 00def0eecf2..87c0c7faa10 100644
+--- a/dlls/winewayland.drv/wayland_pointer.c
++++ b/dlls/winewayland.drv/wayland_pointer.c
+@@ -23,6 +23,7 @@
+ #include "waylanddrv.h"
+ 
+ #include "wine/debug.h"
++#include "wine/server.h"
+ 
+ #include "winuser.h"
+ 
+@@ -41,6 +42,7 @@ static void pointer_handle_motion_internal(void *data, struct wl_pointer *pointe
+     HWND focused_hwnd = wayland->pointer.focused_surface ?
+                         wayland->pointer.focused_surface->hwnd : 0;
+     INPUT input = {0};
++    RAWINPUT rawinput;
+     int screen_x, screen_y;
+ 
+     if (!focused_hwnd)
+@@ -64,7 +66,7 @@ static void pointer_handle_motion_internal(void *data, struct wl_pointer *pointe
+     wayland->last_dispatch_mask |= QS_MOUSEMOVE;
+     wayland->last_event_type = INPUT_MOUSE;
+ 
+-    __wine_send_input(focused_hwnd, &input, NULL);
++    __wine_send_input(focused_hwnd, &input, &rawinput);
+ }
+ 
+ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
+@@ -145,6 +147,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+     HWND focused_hwnd = wayland->pointer.focused_surface ?
+                         wayland->pointer.focused_surface->hwnd : 0;
+     INPUT input = {0};
++    RAWINPUT rawinput;
+ 
+     if (!focused_hwnd)
+         return;
+@@ -172,7 +175,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+     else
+         wayland->last_button_serial = 0;
+ 
+-    __wine_send_input(focused_hwnd, &input, NULL);
++    __wine_send_input(focused_hwnd, &input, &rawinput);
+ }
+ 
+ static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+@@ -201,6 +204,7 @@ static void pointer_handle_axis_discrete(void *data, struct wl_pointer *wl_point
+     HWND focused_hwnd = wayland->pointer.focused_surface ?
+                         wayland->pointer.focused_surface->hwnd : 0;
+     INPUT input = {0};
++    RAWINPUT rawinput;
+ 
+     if (!focused_hwnd)
+         return;
+@@ -225,7 +229,7 @@ static void pointer_handle_axis_discrete(void *data, struct wl_pointer *wl_point
+     wayland->last_dispatch_mask |= QS_MOUSEBUTTON;
+     wayland->last_event_type = INPUT_MOUSE;
+ 
+-    __wine_send_input(focused_hwnd, &input, NULL);
++    __wine_send_input(focused_hwnd, &input, &rawinput);
+ }
+ 
+ static const struct wl_pointer_listener pointer_listener = {
+@@ -254,6 +258,7 @@ static void relative_pointer_handle_motion(void *data,
+                         wayland->pointer.focused_surface->hwnd : 0;
+     int wine_dx, wine_dy;
+     INPUT input = {0};
++    RAWINPUT rawinput;
+ 
+     if (!focused_hwnd)
+         return;
+@@ -274,7 +279,7 @@ static void relative_pointer_handle_motion(void *data,
+     wayland->last_dispatch_mask |= QS_MOUSEMOVE;
+     wayland->last_event_type = INPUT_MOUSE;
+ 
+-    __wine_send_input(focused_hwnd, &input, NULL);
++    __wine_send_input(focused_hwnd, &input, &rawinput);
+ }
+ 
+ static const struct zwp_relative_pointer_v1_listener zwp_relative_pointer_v1_listener = {
+-- 
+2.34.1
+

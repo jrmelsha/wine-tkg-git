@@ -1,0 +1,35 @@
+From 0b8822114a15ad2e99a9ce3781c42b84d8f04432 Mon Sep 17 00:00:00 2001
+From: DodoGTA <tcg96nougat@gmail.com>
+Date: Fri, 26 Nov 2021 21:42:39 +0200
+Subject: [PATCH] winewayland.drv: Add mouse hack for Roblox.
+
+I'm surprised this worked first try :frog:
+---
+ dlls/winewayland.drv/wayland_surface.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/dlls/winewayland.drv/wayland_surface.c b/dlls/winewayland.drv/wayland_surface.c
+index 45ac668d305..3d392a7bfc2 100644
+--- a/dlls/winewayland.drv/wayland_surface.c
++++ b/dlls/winewayland.drv/wayland_surface.c
+@@ -1246,6 +1246,7 @@ void wayland_surface_update_pointer_confinement(struct wayland_surface *surface)
+     RECT client_clip_rect;
+     BOOL needs_lock = FALSE;
+     BOOL needs_confine = FALSE;
++    const char* hackenv = getenv("WINE_DISABLE_MOUSE_HACK");
+ 
+     if (!wayland->zwp_pointer_constraints_v1 || !wayland->pointer.wl_pointer)
+         return;
+@@ -1258,6 +1259,9 @@ void wayland_surface_update_pointer_confinement(struct wayland_surface *surface)
+     vscreen_rect.bottom = vscreen_rect.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+     vscreen_rect.right = vscreen_rect.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+ 
++    /* An attempt at a Roblox mouse hack */
++    if (!EqualRect(&clip_rect, &vscreen_rect) && !hackenv) ClipCursor(NULL);
++
+     /* Get the effective clip area, if any. */
+     IntersectRect(&clip_rect, &clip_rect, &vscreen_rect);
+     IntersectRect(&client_clip_rect, &clip_rect, &client_rect);
+-- 
+2.34.1
+
