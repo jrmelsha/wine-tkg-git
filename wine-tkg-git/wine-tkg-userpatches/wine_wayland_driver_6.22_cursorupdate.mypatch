@@ -4462,10 +4462,10 @@ index 00000000000..41f7f3afb8a
 +#endif /* SONAME_LIBVULKAN */
 diff --git a/dlls/winewayland.drv/wayland.c b/dlls/winewayland.drv/wayland.c
 new file mode 100644
-index 00000000000..5b5f12ba84e
+index 00000000000..cdaed130a8d
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland.c
-@@ -0,0 +1,660 @@
+@@ -0,0 +1,663 @@
 +/*
 + * Wayland core handling
 + *
@@ -4498,6 +4498,7 @@ index 00000000000..5b5f12ba84e
 +
 +#include <errno.h>
 +#include <fcntl.h>
++#include <limits.h>
 +#include <poll.h>
 +#include <unistd.h>
 +
@@ -4745,6 +4746,8 @@ index 00000000000..5b5f12ba84e
 +
 +    wl_list_init(&wayland->output_list);
 +    wl_list_init(&wayland->toplevel_list);
++
++    SetRect(&wayland->cursor_clip, INT_MIN, INT_MIN, INT_MAX, INT_MAX);
 +
 +    /* Populate registry */
 +    wl_registry_add_listener(wayland->wl_registry, &registry_listener, wayland);
@@ -5310,10 +5313,10 @@ index 00000000000..fba86bdc925
 +}
 diff --git a/dlls/winewayland.drv/wayland_cursor.c b/dlls/winewayland.drv/wayland_cursor.c
 new file mode 100644
-index 00000000000..a7dd75c3061
+index 00000000000..82366bb96aa
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland_cursor.c
-@@ -0,0 +1,394 @@
+@@ -0,0 +1,406 @@
 +/*
 + * Wayland cursor handling
 + *
@@ -5700,13 +5703,25 @@ index 00000000000..a7dd75c3061
 +/***********************************************************************
 + *           WAYLAND_ClipCursor
 + */
-+void CDECL WAYLAND_ClipCursor(const RECT *clip)
++BOOL CDECL WAYLAND_ClipCursor(const RECT *clip)
 +{
-+    HWND foreground = GetForegroundWindow();
++    HWND foreground = NULL;
++    struct wayland *wayland = thread_wayland();
 +    WPARAM confine = clip ? WAYLAND_POINTER_CONFINEMENT_SYSTEM_CLIP :
 +                            WAYLAND_POINTER_CONFINEMENT_UNSET_CLIP;
 +
++    if (wayland && wayland->pointer.focused_surface)
++        foreground = wayland->pointer.focused_surface->hwnd;
++
++    if (!foreground)
++        foreground = GetForegroundWindow();
++
++    if (!foreground)
++        return FALSE;
++
 +    SendMessageW(foreground, WM_WAYLAND_POINTER_CONFINEMENT_UPDATE, confine, 0);
++
++    return TRUE;
 +}
 diff --git a/dlls/winewayland.drv/wayland_data_device.c b/dlls/winewayland.drv/wayland_data_device.c
 new file mode 100644
@@ -10722,10 +10737,10 @@ index 00000000000..64a27a9dc4d
 +}
 diff --git a/dlls/winewayland.drv/wayland_surface.c b/dlls/winewayland.drv/wayland_surface.c
 new file mode 100644
-index 00000000000..d99613d8678
+index 00000000000..45ac668d305
 --- /dev/null
 +++ b/dlls/winewayland.drv/wayland_surface.c
-@@ -0,0 +1,1545 @@
+@@ -0,0 +1,1561 @@
 +/*
 + * Wayland surfaces
 + *
@@ -11996,27 +12011,43 @@ index 00000000000..d99613d8678
 +          wine_dbgstr_rect(&clip_rect), wine_dbgstr_rect(&client_clip_rect),
 +          wine_dbgstr_rect(&client_rect),
 +          wine_dbgstr_rect(&vscreen_rect),
-+          GetCursor());
++          wayland->pointer.hcursor);
 +
++    /* If there is a GL/VK subsurface use that to apply the pointer constaints,
++     * since it's covering the whole client area. */
 +    glvk = wayland_surface_ref_glvk(surface);
-+    surface = glvk ? glvk : surface;
-+
-+    /* Only confine or lock if the cursor is actually clipped within this window. */
-+    if (!IsRectEmpty(&client_clip_rect))
++    if (glvk)
 +    {
-+        HCURSOR hcursor = GetCursor();
++        if (surface->zwp_locked_pointer_v1)
++        {
++            zwp_locked_pointer_v1_destroy(surface->zwp_locked_pointer_v1);
++            surface->zwp_locked_pointer_v1 = NULL;
++        }
++        if (surface->zwp_confined_pointer_v1)
++        {
++            zwp_confined_pointer_v1_destroy(surface->zwp_confined_pointer_v1);
++            surface->zwp_confined_pointer_v1 = NULL;
++        }
++        surface = glvk;
++    }
++
++    /* Only confine or lock if the cursor is actually clipped within this window,
++     * or if the clip rect is empty. */
++    if (!IsRectEmpty(&client_clip_rect) || IsRectEmpty(&clip_rect))
++    {
 +        /* If the cursor is not visible, and we have an effective clip (i.e.,
 +         * clip is not the whole screen) lock the cursor. If the client rect is
 +         * the whole screen (i.e., application is fullscreen), we can't
 +         * differentiate between an explicit fullscreen clip and no effective
 +         * clip (i.e., clip is the whole screen), so also lock. */
-+        if (!hcursor &&
++        if (!wayland->pointer.hcursor &&
 +            (!EqualRect(&clip_rect, &vscreen_rect) ||
 +             EqualRect(&client_rect, &vscreen_rect)))
 +        {
 +            needs_lock = TRUE;
 +        }
-+        else if (hcursor && !EqualRect(&clip_rect, &vscreen_rect))
++        else if (wayland->pointer.hcursor &&
++                 !EqualRect(&clip_rect, &vscreen_rect))
 +        {
 +            needs_confine = TRUE;
 +        }
@@ -12273,7 +12304,7 @@ index 00000000000..d99613d8678
 +}
 diff --git a/dlls/winewayland.drv/waylanddrv.h b/dlls/winewayland.drv/waylanddrv.h
 new file mode 100644
-index 00000000000..b3ce44e21b0
+index 00000000000..bda09330eab
 --- /dev/null
 +++ b/dlls/winewayland.drv/waylanddrv.h
 @@ -0,0 +1,560 @@
@@ -12605,7 +12636,7 @@ index 00000000000..b3ce44e21b0
 +void wayland_read_options_from_registry(struct wayland *wayland);
 +void init_user_driver(void) DECLSPEC_HIDDEN;
 +
-+extern void CDECL WAYLAND_ClipCursor( const RECT *clip ) DECLSPEC_HIDDEN;
++extern BOOL CDECL WAYLAND_ClipCursor( const RECT *clip ) DECLSPEC_HIDDEN;
 +extern LONG CDECL WAYLAND_ChangeDisplaySettingsEx( LPCWSTR devname, LPDEVMODEW devmode,
 +                                                  HWND hwnd, DWORD flags, LPVOID lpvoid ) DECLSPEC_HIDDEN;
 +extern BOOL CDECL WAYLAND_CreateWindow( HWND hwnd ) DECLSPEC_HIDDEN;
@@ -13014,10 +13045,10 @@ index 00000000000..f275c83b097
 +}
 diff --git a/dlls/winewayland.drv/window.c b/dlls/winewayland.drv/window.c
 new file mode 100644
-index 00000000000..5a9bd463a27
+index 00000000000..1c8e1df8923
 --- /dev/null
 +++ b/dlls/winewayland.drv/window.c
-@@ -0,0 +1,1533 @@
+@@ -0,0 +1,1537 @@
 +/*
 + * Window related functions
 + *
@@ -13411,6 +13442,10 @@ index 00000000000..5a9bd463a27
 +    }
 +
 +    data->effective_parent = effective_parent_hwnd;
++
++    /* Reset window state, so that it can be properly applied again. */
++    data->maximized = FALSE;
++    data->fullscreen = FALSE;
 +
 +    /* Use wayland subsurfaces for children windows and toplevels that we
 +     * consider to be popups and have an effective parent. Otherwise, if the
