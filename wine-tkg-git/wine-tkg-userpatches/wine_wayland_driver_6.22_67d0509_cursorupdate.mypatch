@@ -1,8 +1,8 @@
 diff --git a/configure b/configure
-index b442f084a96..668db9dbfb5 100755
+index d974d5b3324..0335ca68a4f 100755
 --- a/configure
 +++ b/configure
-@@ -707,6 +707,16 @@ DBUS_CFLAGS
+@@ -705,6 +705,16 @@ DBUS_CFLAGS
  INOTIFY_LIBS
  INOTIFY_CFLAGS
  PCAP_LIBS
@@ -19,10 +19,10 @@ index b442f084a96..668db9dbfb5 100755
  X_EXTRA_LIBS
  X_LIBS
  X_PRE_LIBS
-@@ -931,6 +941,7 @@ with_xrender
- with_xshape
+@@ -930,6 +940,7 @@ with_xshape
  with_xshm
  with_xxf86vm
+ with_system_dllpath
 +with_wayland
  with_wine_tools
  with_wine64
@@ -47,13 +47,13 @@ index b442f084a96..668db9dbfb5 100755
 +XKBCOMMON_LIBS
 +WAYLAND_EGL_CFLAGS
 +WAYLAND_EGL_LIBS
- HAL_CFLAGS
- HAL_LIBS
  GNUTLS_CFLAGS
+ GNUTLS_LIBS
+ SANE_CFLAGS
 @@ -2718,6 +2738,7 @@ Optional Packages:
-   --without-xshape        do not use the Xshape extension
-   --without-xshm          do not use XShm (shared memory extension)
-   --without-xxf86vm       do not use XFree video mode extension
+   --with-system-dllpath=PATH
+                           load external PE dependencies from colon-separated
+                           path PATH
 +  --with-wayland          build with wayland support
    --with-wine-tools=DIR   use Wine tools from directory DIR
    --with-wine64=DIR       use the 64-bit Wine in DIR for a Wow64 build
@@ -78,10 +78,10 @@ index b442f084a96..668db9dbfb5 100755
 +              C compiler flags for wayland-egl, overriding pkg-config
 +  WAYLAND_EGL_LIBS
 +              Linker flags for wayland-egl, overriding pkg-config
-   HAL_CFLAGS  C compiler flags for hal, overriding pkg-config
-   HAL_LIBS    Linker flags for hal, overriding pkg-config
    GNUTLS_CFLAGS
-@@ -4763,6 +4800,12 @@ then :
+               C compiler flags for gnutls, overriding pkg-config
+   GNUTLS_LIBS Linker flags for gnutls, overriding pkg-config
+@@ -4754,6 +4791,12 @@ then :
  fi
  
  
@@ -92,9 +92,9 @@ index b442f084a96..668db9dbfb5 100755
 +
 +
  
- # Check whether --with-wine-tools was given.
- if test ${with_wine_tools+y}
-@@ -14903,6 +14946,468 @@ enable_winex11_drv=${enable_winex11_drv:-no}
+ # Check whether --with-system-dllpath was given.
+ if test ${with_system_dllpath+y}
+@@ -14868,6 +14911,468 @@ enable_winex11_drv=${enable_winex11_drv:-no}
  fi
  fi
  
@@ -563,7 +563,7 @@ index b442f084a96..668db9dbfb5 100755
  if test "$ac_cv_header_CL_cl_h" = "yes"
  then
      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for clGetPlatformInfo in -lOpenCL" >&5
-@@ -21943,6 +22448,7 @@ wine_fn_config_makefile dlls/winepulse.drv enable_winepulse_drv
+@@ -21788,6 +22293,7 @@ wine_fn_config_makefile dlls/winepulse.drv enable_winepulse_drv
  wine_fn_config_makefile dlls/wineqtdecoder enable_wineqtdecoder
  wine_fn_config_makefile dlls/wineusb.sys enable_wineusb_sys
  wine_fn_config_makefile dlls/winevulkan enable_winevulkan
@@ -571,7 +571,7 @@ index b442f084a96..668db9dbfb5 100755
  wine_fn_config_makefile dlls/winex11.drv enable_winex11_drv
  wine_fn_config_makefile dlls/winexinput.sys enable_winexinput_sys
  wine_fn_config_makefile dlls/wing.dll16 enable_win16
-@@ -23201,6 +23707,15 @@ X_CFLAGS = $X_CFLAGS
+@@ -23047,6 +23553,15 @@ X_CFLAGS = $X_CFLAGS
  X_PRE_LIBS = $X_PRE_LIBS
  X_LIBS = $X_LIBS
  X_EXTRA_LIBS = $X_EXTRA_LIBS
@@ -588,17 +588,17 @@ index b442f084a96..668db9dbfb5 100755
  INOTIFY_CFLAGS = $INOTIFY_CFLAGS
  INOTIFY_LIBS = $INOTIFY_LIBS
 diff --git a/configure.ac b/configure.ac
-index 6631d2f42fc..f0d10c892b9 100644
+index 51ac2eb8e56..d6e0dc1d0af 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -89,6 +89,7 @@ AC_ARG_WITH(xshm,      AS_HELP_STRING([--without-xshm],[do not use XShm (shared
+@@ -88,6 +88,7 @@ AC_ARG_WITH(xshm,      AS_HELP_STRING([--without-xshm],[do not use XShm (shared
              [if test "x$withval" = "xno"; then ac_cv_header_X11_extensions_XShm_h=no; fi])
  AC_ARG_WITH(xxf86vm,   AS_HELP_STRING([--without-xxf86vm],[do not use XFree video mode extension]),
              [if test "x$withval" = "xno"; then ac_cv_header_X11_extensions_xf86vmode_h=no; ac_cv_header_X11_extensions_xf86vmproto_h=no; fi])
 +AC_ARG_WITH(wayland,   AS_HELP_STRING([--with-wayland],[build with wayland support]))
  
- AC_ARG_WITH(wine-tools,AS_HELP_STRING([--with-wine-tools=DIR],[use Wine tools from directory DIR]))
- AC_ARG_WITH(wine64,    AS_HELP_STRING([--with-wine64=DIR],[use the 64-bit Wine in DIR for a Wow64 build]))
+ AC_ARG_WITH(system-dllpath,AS_HELP_STRING([--with-system-dllpath=PATH],[load external PE dependencies from colon-separated path PATH]),
+             AC_SUBST(system_dllpath,[$withval]))
 @@ -1283,6 +1284,35 @@ else
                       [enable_winex11_drv])
  fi
@@ -635,7 +635,7 @@ index 6631d2f42fc..f0d10c892b9 100644
  dnl **** Check for OpenCL ****
  if test "$ac_cv_header_CL_cl_h" = "yes"
  then
-@@ -3482,6 +3512,7 @@ WINE_CONFIG_MAKEFILE(dlls/winepulse.drv)
+@@ -3471,6 +3501,7 @@ WINE_CONFIG_MAKEFILE(dlls/winepulse.drv)
  WINE_CONFIG_MAKEFILE(dlls/wineqtdecoder)
  WINE_CONFIG_MAKEFILE(dlls/wineusb.sys)
  WINE_CONFIG_MAKEFILE(dlls/winevulkan)
@@ -15350,10 +15350,10 @@ index 00000000000..2a33c7ba564
 +    return utf8_len;
 +}
 diff --git a/include/config.h.in b/include/config.h.in
-index 0c843a0423c..0c47213c8b8 100644
+index 9d7b682ce36..a23c6c9b970 100644
 --- a/include/config.h.in
 +++ b/include/config.h.in
-@@ -775,6 +775,12 @@
+@@ -778,6 +778,12 @@
  /* Define to 1 if you have the <valgrind/valgrind.h> header file. */
  #undef HAVE_VALGRIND_VALGRIND_H
  
@@ -15366,7 +15366,7 @@ index 0c843a0423c..0c47213c8b8 100644
  /* Define to 1 if you have the <X11/extensions/shape.h> header file. */
  #undef HAVE_X11_EXTENSIONS_SHAPE_H
  
-@@ -829,6 +835,9 @@
+@@ -832,6 +838,9 @@
  /* Define if you have the XKB extension */
  #undef HAVE_XKB
  
@@ -15416,7 +15416,7 @@ index 6d577dd0fd1..e1dce4953e2 100644
  static BOOL using_root;
  
 diff --git a/tools/makedep.c b/tools/makedep.c
-index e757efdb121..3b3d21e5d39 100644
+index ac3e6d969e2..86d061f0952 100644
 --- a/tools/makedep.c
 +++ b/tools/makedep.c
 @@ -165,6 +165,7 @@ static const char *msgfmt;
@@ -15427,7 +15427,7 @@ index e757efdb121..3b3d21e5d39 100644
  
  struct makefile
  {
-@@ -494,6 +495,15 @@ static char *replace_filename( const char *path, const char *name )
+@@ -496,6 +497,15 @@ static char *replace_filename( const char *path, const char *name )
      return ret;
  }
  
@@ -15442,8 +15442,8 @@ index e757efdb121..3b3d21e5d39 100644
 +}
  
  /*******************************************************************
-  *         strarray_replace_extension
-@@ -1331,6 +1341,9 @@ static struct file *open_include_file( const struct makefile *make, struct incl_
+  *         replace_substr
+@@ -1317,6 +1327,9 @@ static struct file *open_include_file( const struct makefile *make, struct incl_
          return file;
      }
  
@@ -15453,7 +15453,7 @@ index e757efdb121..3b3d21e5d39 100644
      /* check for extra targets */
      if (strarray_exists( &make->extra_targets, pFile->name ))
      {
-@@ -1822,6 +1835,19 @@ static void add_generated_sources( struct makefile *make )
+@@ -1808,6 +1821,19 @@ static void add_generated_sources( struct makefile *make )
              strarray_addall_uniq( &make->extra_imports,
                                    get_expanded_file_local_var( make, obj, "IMPORTS" ));
          }
@@ -15473,7 +15473,7 @@ index e757efdb121..3b3d21e5d39 100644
      }
      if (make->testdll)
      {
-@@ -2999,6 +3025,15 @@ static void output_source_spec( struct makefile *make, struct incl_file *source,
+@@ -2934,6 +2960,15 @@ static void output_source_spec( struct makefile *make, struct incl_file *source,
      output( "\n" );
  }
  
@@ -15489,7 +15489,7 @@ index e757efdb121..3b3d21e5d39 100644
  
  /*******************************************************************
   *         output_source_default
-@@ -3112,6 +3147,7 @@ static const struct
+@@ -3051,6 +3086,7 @@ static const struct
      { "in", output_source_in },
      { "x", output_source_x },
      { "spec", output_source_spec },
@@ -15497,7 +15497,7 @@ index e757efdb121..3b3d21e5d39 100644
      { NULL, output_source_default }
  };
  
-@@ -4054,6 +4090,7 @@ static void output_silent_rules(void)
+@@ -3986,6 +4022,7 @@ static void output_silent_rules(void)
          "MSG",
          "SED",
          "TEST",
@@ -15505,7 +15505,7 @@ index e757efdb121..3b3d21e5d39 100644
          "WIDL",
          "WMC",
          "WRC"
-@@ -4152,6 +4189,7 @@ static void load_sources( struct makefile *make )
+@@ -4084,6 +4121,7 @@ static void load_sources( struct makefile *make )
          "IN_SRCS",
          "PO_SRCS",
          "MANPAGES",
@@ -15513,7 +15513,7 @@ index e757efdb121..3b3d21e5d39 100644
          NULL
      };
      const char **var;
-@@ -4381,6 +4419,7 @@ int main( int argc, char *argv[] )
+@@ -4313,6 +4351,7 @@ int main( int argc, char *argv[] )
      msgfmt             = get_expanded_make_variable( top_makefile, "MSGFMT" );
      sed_cmd            = get_expanded_make_variable( top_makefile, "SED_CMD" );
      ln_s               = get_expanded_make_variable( top_makefile, "LN_S" );
