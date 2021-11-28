@@ -192,8 +192,6 @@ fi
 
 source=("$_winesrcdir"::"${_winesrctarget}${_plain_commit}"
 		"$_stgsrcdir"::"git+https://github.com/wine-staging/wine-staging.git${_staging_commit}"
-		'30-win32-aliases.conf' # 32-bit font antialiasing
-		'wine-binfmt.conf' # Enables launching windows executables directly
 )
 
 # 		# game specific
@@ -326,9 +324,7 @@ source=("$_winesrcdir"::"${_winesrctarget}${_plain_commit}"
 # 		'server_Abort_waiting_on_a_completion_port_when_closing_it.patch' # Proton patch introduced with 5.0-8
 
 md5sums=('SKIP'
-         'SKIP'
-         '1ff4e467f59409272088d92173a0f801'
-         'cff441678d798466a13a0d03b01e23d7')
+         'SKIP')
 
 if [ "$_EXTERNAL_INSTALL" = "true" ]; then
   provides=(
