@@ -154,6 +154,13 @@ function new_lib_path_check {
   echo "_x86_64_windows_path=$_x86_64_windows_path" >>"$_logdir"/proton-tkg.log 2>&1
 }
 
+function clone_proton {
+  git clone https://github.com/ValveSoftware/Proton || true # It'll complain the path already exists on subsequent builds
+  cd Proton
+  git reset --hard HEAD
+  git clean -xdf
+}
+
 function build_vrclient {
   cd "$_nowhere"/Proton
   source "$_nowhere/proton_tkg_token"
@@ -252,7 +259,8 @@ function build_lsteamclient {
   sed -re 's@_LDFLAGS=@_LDFLAGS= -static-libgcc -static-libstdc++ -ldl @' -i "$_nowhere/Proton/build/lsteamclient.win64/Makefile"
   make -e CC="winegcc -m64" CXX="wineg++ -m64 $_cxx_addon" -C "$_nowhere/Proton/build/lsteamclient.win64" -j$(nproc) && strip --strip-debug lsteamclient.dll.so
   if [ "$_new_lib_paths_69" = "true" ]; then
-    winebuild --dll --fake-module -m64 -E "$_nowhere/Proton/lsteamclient/lsteamclient.spec" --dll-name=lsteamclient -o lsteamclient.dll.fake
+    touch "$_nowhere/Proton/build/lsteamclient.win64/steamclient.spec"
+    winebuild --dll --fake-module -m64 -E "$_nowhere/Proton/build/lsteamclient.win64/steamclient.spec" --dll-name=lsteamclient -o lsteamclient.dll.fake
   fi
   cd ../..
 
@@ -261,7 +269,8 @@ function build_lsteamclient {
   sed -re 's@_LDFLAGS=@_LDFLAGS= -static-libgcc -static-libstdc++ -ldl @' -i "$_nowhere/Proton/build/lsteamclient.win32/Makefile"
   make -e CC="winegcc -m32" CXX="wineg++ -m32 $_cxx_addon" -C "$_nowhere/Proton/build/lsteamclient.win32" -j$(nproc) && strip --strip-debug lsteamclient.dll.so
   if [ "$_new_lib_paths_69" = "true" ]; then
-    winebuild --dll --fake-module -m32 -E "$_nowhere/Proton/lsteamclient/lsteamclient.spec" --dll-name=lsteamclient -o lsteamclient.dll.fake
+    touch "$_nowhere/Proton/build/lsteamclient.win32/steamclient.spec"
+    winebuild --dll --fake-module -m32 -E "$_nowhere/Proton/build/lsteamclient.win32/steamclient.spec" --dll-name=lsteamclient -o lsteamclient.dll.fake
   fi
   cd "$_nowhere"
 
@@ -434,7 +443,7 @@ function build_steamhelper {
         ( cd Proton && patch -Np1 -R < "$_nowhere/proton_template/steamhelper_revert_openvr-support-legacy.patch" || true )
       fi
     else
-      if ( cd Proton && git merge-base --is-ancestor 492bb580d167559d152f39746e9dfeb5789ba640 HEAD ); then
+      if [ -d "$_nowhere"/Proton/steam_helper/64 ]; then
         ( cd Proton && patch -Np1 < "$_nowhere/proton_template/steamhelper_remove__wine_make_process_system2.patch" || true )
       else
         ( cd Proton && patch -Np1 < "$_nowhere/proton_template/steamhelper_remove__wine_make_process_system.patch" || true )
@@ -476,7 +485,8 @@ function build_steamhelper {
     fi
 
     if [ "$_new_lib_paths_69" = "true" ]; then
-      winebuild --exe --fake-module -m32 -E "$_nowhere/Proton/lsteamclient/lsteamclient.spec" --dll-name=steam -o steam.exe.fake
+      touch "$_nowhere/Proton/build/steam.win32/steam.spec"
+      winebuild --exe --fake-module -m32 -E "$_nowhere/Proton/build/steam.win32/steam.spec" --dll-name=steam -o steam.exe.fake
     fi
 
     # 64-bit
@@ -485,7 +495,8 @@ function build_steamhelper {
       winemaker $WINEMAKERFLAGS --guiexe -lsteam_api -lole32 -I"$_nowhere/Proton/lsteamclient/steamworks_sdk_142/" -I"$_nowhere/Proton/openvr/headers/" -L"$_nowhere/Proton/steam_helper/32/" -L"$_nowhere/Proton/steam_helper/64/" .
       make -e CC="winegcc -m64" CXX="wineg++ -m64 $_cxx_addon" -C "$_nowhere/Proton/build/steam.win64" LIBRARIES="-L$_nowhere/Proton/steam_helper/32/ -L$_nowhere/Proton/steam_helper/64/ -lsteam_api -lole32 -ldl -static-libgcc -static-libstdc++" -j$(nproc) && strip --strip-debug steam.exe.so
 
-      winebuild --exe --fake-module -m64 -E "$_nowhere/Proton/lsteamclient/lsteamclient.spec" --dll-name=steam -o steam.exe.fake
+      touch "$_nowhere/Proton/build/steam.win64/steam.spec"
+      winebuild --exe --fake-module -m64 -E "$_nowhere/Proton/build/steam.win64/steam.spec" --dll-name=steam -o steam.exe.fake
     fi
 
     cd "$_nowhere"
@@ -833,11 +844,8 @@ else
         rm -rf Proton/*
       fi
       # Clone Proton tree as we need to build some tools from it
-      git clone https://github.com/ValveSoftware/Proton || true # It'll complain the path already exists on subsequent builds
-      cd Proton
-      git reset --hard HEAD
-      git clean -xdf
-      git pull
+      clone_proton
+      git pull --ff-only || cd .. && rm -rf Proton && echo -e "######\nProton tree was force-pushed upstream.. Recloning clean to avoid issues..\n######" && clone_proton
       git checkout "$_proton_branch"
 
       _user_patches_no_confirm="true"
