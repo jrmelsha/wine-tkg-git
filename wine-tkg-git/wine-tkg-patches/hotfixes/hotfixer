@@ -609,6 +609,8 @@ if [ "$_proton_fs_hack" = "true" ] || [ "$_childwindow_fix" = "true" ] && ( cd "
   if ( cd "${srcdir}"/"${_stgsrcdir}" && git merge-base --is-ancestor 4c51f4f5f6ddecd47a3121a8ce4228d4763892b4 HEAD ); then
     _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/childwindow/staging-4c51f4f)
   fi
+elif [ "$_protonify" = "true" ] && ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor b502a3e3c6b43ac3947d85ccc263e729ace917fa HEAD ); then
+  _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/childwindow/b502a3e-proton)
 fi
 
 # Revert d4259ac8e9326a8173d6f83f0d525c97b90a1da0 which breaks compiling the steam helper
@@ -659,7 +661,11 @@ if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 2ad44002da6
       _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/rdr2/0001-proton-bcrypt_rdr2_fixes)
     fi
     _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/rdr2/0002-bcrypt-Add-support-for-calculating-secret-ecc-keys)
-    _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/rdr2/0003-bcrypt-Add-support-for-OAEP-padded-asymmetric-key-de)
+    if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 39336fd02d90b8d7d1d24d5eb31f9b0172b60a17 HEAD ); then
+      _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/rdr2/0003-bcrypt-Add-support-for-OAEP-padded-asymmetric-key-de2)
+    else
+      _hotfixes+=("$_where"/wine-tkg-patches/hotfixes/rdr2/0003-bcrypt-Add-support-for-OAEP-padded-asymmetric-key-de)
+    fi
   fi
 fi
 

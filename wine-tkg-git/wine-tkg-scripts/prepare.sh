@@ -806,7 +806,7 @@ _prepare() {
 	fi
 
 	# Fixes (partially) systray on plasma 5 - https://bugs.winehq.org/show_bug.cgi?id=38409
-	if [ "$_plasma_systray_fix" = "true" ]; then
+	if [ "$_plasma_systray_fix" = "true" ] && ( cd "${srcdir}"/"${_winesrcdir}" && ! git merge-base --is-ancestor 8d6c33c3bfca4f4ed7b7653fd0b82dfbc12bd3cb HEAD ); then
 	  if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 0c249e6125fc9dc6ee86b4ef6ae0d9fa2fc6291b HEAD ); then
 	    _patchname='plasma_systray_fix.patch' && _patchmsg="Applied plasma 5 systray fix" && nonuser_patcher
 	  elif git merge-base --is-ancestor b87256cd1db21a59484248a193b6ad12ca2853ca HEAD; then
@@ -1142,8 +1142,10 @@ _prepare() {
 
 	# esync
 	if [ "$_use_esync" = "true" ]; then
-	  if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 6c8500d05eb23453be7185e4b87975fcb8b4bc09 HEAD ); then
+	  if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 8d6c33c3bfca4f4ed7b7653fd0b82dfbc12bd3cb HEAD ); then
 	    _patchname='esync-unix-mainline.patch' && _patchmsg="Using Esync (unix, mainline) patchset" && nonuser_patcher
+	  elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 6c8500d05eb23453be7185e4b87975fcb8b4bc09 HEAD ); then
+	    _patchname='esync-unix-mainline-8d6c33c.patch' && _patchmsg="Using Esync (unix, mainline) patchset" && nonuser_patcher
 	  elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 6fdae1979bace3b2832fe099475e4368f543c13f HEAD ); then
 	    _patchname='esync-unix-mainline-6c8500d.patch' && _patchmsg="Using Esync (unix, mainline) patchset" && nonuser_patcher
 	  elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor dd882794d2b226c59a306d1b39b9529ac431479c HEAD ); then
@@ -1463,8 +1465,10 @@ _prepare() {
 
 	# Fix for Mortal Kombat 11 - Requires staging, native mfplat (win7) and a different GPU driver than RADV
 	if [ "$_mk11_fix" = "true" ] && [ "$_use_staging" = "true" ] && [ "$_proton_fs_hack" = "true" ]; then
-	  if git merge-base --is-ancestor 8504e40d5b5e7076b998b36e6291515b863482cb HEAD; then
+	  if git merge-base --is-ancestor 7c39ce0a6cf8a3df1337a0768045c43044fce2f6 HEAD; then
 	    _patchname='mk11.patch' && _patchmsg="Applied Mortal Kombat 11 fix" && nonuser_patcher
+	  elif git merge-base --is-ancestor 8504e40d5b5e7076b998b36e6291515b863482cb HEAD; then
+	    _patchname='mk11-7c39ce0.patch' && _patchmsg="Applied Mortal Kombat 11 fix" && nonuser_patcher
 	  elif git merge-base --is-ancestor 0c249e6125fc9dc6ee86b4ef6ae0d9fa2fc6291b HEAD; then
 	    _patchname='mk11-8504e40.patch' && _patchmsg="Applied Mortal Kombat 11 fix" && nonuser_patcher
 	  elif git merge-base --is-ancestor 75fb68e42423362ae945c0c0554f0dcd4d2e169b HEAD; then
@@ -1554,8 +1558,10 @@ EOM
 	# fsync - experimental replacement for esync introduced with Proton 4.11-1
 	if [ "$_use_fsync" = "true" ]; then
 	  if [ "$_staging_esync" = "true" ]; then
-	    if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 10ca57f4f56f86b433686afbdbe140ba54b239bb HEAD ); then
+	    if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 8d6c33c3bfca4f4ed7b7653fd0b82dfbc12bd3cb HEAD ); then
 	      _patchname='fsync-unix-staging.patch' && _patchmsg="Applied fsync, an experimental replacement for esync (unix, staging)" && nonuser_patcher
+	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 10ca57f4f56f86b433686afbdbe140ba54b239bb HEAD ); then
+	      _patchname='fsync-unix-staging-8d6c33c.patch' && _patchmsg="Applied fsync, an experimental replacement for esync (unix, staging)" && nonuser_patcher
 	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 626870abe2e800cc9407d05d5c00500a4ad97b3a HEAD ); then
 	      _patchname='fsync-unix-staging-10ca57f.patch' && _patchmsg="Applied fsync, an experimental replacement for esync (unix, staging)" && nonuser_patcher
 	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 731339cd60c255fd5890063b144ad7c00661f5a0 HEAD ); then
@@ -1618,8 +1624,10 @@ EOM
 	      fi
 	    fi
 	  elif [ "$_use_esync" = "true" ]; then
-	    if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 10ca57f4f56f86b433686afbdbe140ba54b239bb HEAD ); then
+	    if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 8d6c33c3bfca4f4ed7b7653fd0b82dfbc12bd3cb HEAD ); then
 	      _patchname='fsync-unix-mainline.patch' && _patchmsg="Applied fsync, an experimental replacement for esync (unix, mainline)" && nonuser_patcher
+	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 10ca57f4f56f86b433686afbdbe140ba54b239bb HEAD ); then
+	      _patchname='fsync-unix-mainline-8d6c33c.patch' && _patchmsg="Applied fsync, an experimental replacement for esync (unix, mainline)" && nonuser_patcher
 	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 731339cd60c255fd5890063b144ad7c00661f5a0 HEAD ); then
 	      _patchname='fsync-unix-mainline-10ca57f.patch' && _patchmsg="Applied fsync, an experimental replacement for esync (unix, mainline)" && nonuser_patcher
 	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor d6ef9401b3ef05e87e0cadd31992a6809008331e HEAD ); then
@@ -2011,8 +2019,10 @@ EOM
 	    _patchname='staging-winex11-key_translation.patch' && _patchmsg="Applied non-fshack friendly staging winex11-key_translation patchset" && nonuser_patcher
 	  fi
 	  if [ "$_steamclient_noswap" != "true" ] && git merge-base --is-ancestor b7db0b52cee65a008f503ce727befcad3ba8d28a HEAD; then
-	    if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 1b9ada6cabd04ccb02c4ddcc82a53e62ea477948 HEAD ); then
+	    if ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor d10410eac2b598699a3619d6e3f908e256af3afb HEAD ); then
 	      _patchname='proton-tkg-steamclient-swap.patch' && _patchmsg="Applied steamclient substitution hack" && nonuser_patcher
+	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 1b9ada6cabd04ccb02c4ddcc82a53e62ea477948 HEAD ); then
+	      _patchname='proton-tkg-steamclient-swap-d10410e.patch' && _patchmsg="Applied steamclient substitution hack" && nonuser_patcher
 	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 72449b76e8e40f1690762545fd2c0021647da140 HEAD ); then
 	      _patchname='proton-tkg-steamclient-swap-1b9ada6.patch' && _patchmsg="Applied steamclient substitution hack" && nonuser_patcher
 	    elif ( cd "${srcdir}"/"${_winesrcdir}" && git merge-base --is-ancestor 3190a5bcdd7fc043cf54ac070a5f602cb9dd140f HEAD ); then

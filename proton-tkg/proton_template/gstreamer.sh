@@ -1,7 +1,7 @@
 #!/bin/bash
 
   _nowhere="$(dirname "$PWD")"
-  source "$_nowhere/proton_tkg_token"
+  source "$_nowhere/proton_tkg_token" || source "$_nowhere/src/proton_tkg_token"
 
   cd "$_nowhere"/Proton
 
@@ -247,6 +247,7 @@
 	-Dopencv=disabled \
 	-Dvoamrwbenc=disabled \
 	-Dx265=disabled \
+	-Dopenexr=disabled \
 	-Dexamples=disabled \
 	-Dtests=disabled \
 	-Dintrospection=disabled \
