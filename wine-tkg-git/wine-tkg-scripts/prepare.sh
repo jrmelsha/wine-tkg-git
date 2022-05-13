@@ -765,6 +765,11 @@ _prepare() {
 	  echo -e "( Kernelbase reverts clean reverts applied )\n" >> "$_where"/last_build_config.log
 	fi
 
+	if ! git merge-base --is-ancestor 197f2ee6c0e2dd70cfac6e15ede7fc0e38948188 HEAD; then
+		_committorevert=db2b266c57b73e1a16785213ce923b749c84400e && nonuser_reverter
+		echo -e "( Roblox Studio black mouse unbreak reverts applied )\n" >> "$_where"/last_build_config.log
+	fi
+
 	_commitmsg="01-reverts" _committer
 
 	# Don't include *.orig and *~ files in the generated staging patchsets
