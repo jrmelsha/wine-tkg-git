@@ -7,15 +7,15 @@ _prebuild_common() {
 
 	# Use custom compiler paths if defined
 	if [ -n "${CUSTOM_MINGW_PATH}" ] && [ -z "${CUSTOM_GCC_PATH}" ]; then
-	  PATH="${PATH}:${CUSTOM_MINGW_PATH}/bin:${CUSTOM_MINGW_PATH}/lib:${CUSTOM_MINGW_PATH}/include"
-	  echo -e "CUSTOM_MINGW_PATH = ${CUSTOM_MINGW_PATH##*/}" >> "$_where"/last_build_config.log
+	  PATH=${PATH}:$( find "$CUSTOM_MINGW_PATH/" -maxdepth 1 -printf "%p:" || ( warning "Custom compiler path seems wrong.." && exit 1 ) )
+	  echo -e "CUSTOM_MINGW_PATH = ${CUSTOM_MINGW_PATH##*/}" >> "$_where"/last_build_config.log #" Coloring confusion
 	elif [ -n "${CUSTOM_GCC_PATH}" ] && [ -z "${CUSTOM_MINGW_PATH}" ]; then
-	  PATH="${CUSTOM_GCC_PATH}/bin:${CUSTOM_GCC_PATH}/lib:${CUSTOM_GCC_PATH}/include:${PATH}"
-	  echo -e "CUSTOM_GCC_PATH = ${CUSTOM_GCC_PATH##*/}" >> "$_where"/last_build_config.log
+	  PATH=$( find "$CUSTOM_GCC_PATH/" -maxdepth 1 -printf "%p:" || ( warning "Custom compiler path seems wrong.." && exit 1 ) )${PATH}
+	  echo -e "CUSTOM_GCC_PATH = ${CUSTOM_GCC_PATH##*/}" >> "$_where"/last_build_config.log #" Coloring confusion
 	elif [ -n "${CUSTOM_MINGW_PATH}" ] && [ -n "${CUSTOM_GCC_PATH}" ]; then
-	  PATH="${CUSTOM_GCC_PATH}/bin:${CUSTOM_GCC_PATH}/lib:${CUSTOM_GCC_PATH}/include:${CUSTOM_MINGW_PATH}/bin:${CUSTOM_MINGW_PATH}/lib:${CUSTOM_MINGW_PATH}/include:${PATH}"
-	  echo -e "CUSTOM_MINGW_PATH = ${CUSTOM_MINGW_PATH##*/}" >> "$_where"/last_build_config.log
-	  echo -e "CUSTOM_GCC_PATH = ${CUSTOM_GCC_PATH##*/}" >> "$_where"/last_build_config.log
+	  PATH=$( find "$CUSTOM_GCC_PATH/" -maxdepth 1 -printf "%p:" || ( warning "Custom compiler path seems wrong.." && exit 1 ) )$( find "$CUSTOM_MINGW_PATH/" -maxdepth 1 -printf "%p:" || ( warning "Custom compiler path seems wrong.." && exit 1 ) )${PATH}
+	  echo -e "CUSTOM_MINGW_PATH = ${CUSTOM_MINGW_PATH##*/}" >> "$_where"/last_build_config.log #" Coloring confusion
+	  echo -e "CUSTOM_GCC_PATH = ${CUSTOM_GCC_PATH##*/}" >> "$_where"/last_build_config.log #"
 	fi
 
 	echo "" >> "$_where"/last_build_config.log
@@ -34,7 +34,7 @@ _prebuild_common() {
 	  export CROSSLDFLAGS="${_CROSS_LD_FLAGS}"
 	  echo "With predefined optimizations:" >> "$_where"/last_build_config.log
 	else
-	  export CROSSCFLAGS="$(echo "$CFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/-fno-plt//")"
+	  export CROSSCFLAGS="$(echo "$CFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/-fno-plt//" -e "s/-fstack-clash-protection//")"
 	  export CROSSLDFLAGS="$(echo "$CFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/,-z,now//" -e "s/-fno-plt//")"
 	  echo "Using /etc/makepkg.conf settings for compiler optimization flags" >> "$_where"/last_build_config.log
 	fi
@@ -42,9 +42,9 @@ _prebuild_common() {
 	# workaround for FS#55128
 	# https://bugs.archlinux.org/task/55128
 	# https://bugs.winehq.org/show_bug.cgi?id=43530
-	export CFLAGS="$(echo "$CFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/-fno-plt//")"
+	export CFLAGS="$(echo "$CFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/-fno-plt//" -e "s/-fstack-clash-protection//")"
 	export LDFLAGS="$(echo "$LDFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/,-z,now//" -e "s/-fno-plt//")"
-	export CROSSCFLAGS="$(echo "$CROSSCFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/-fno-plt//")"
+	export CROSSCFLAGS="$(echo "$CROSSCFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/-fno-plt//" -e "s/-fstack-clash-protection//")"
 	export CROSSLDFLAGS="$(echo "$CROSSLDFLAGS" | sed -e "s/-fstack-protector-strong//" -e "s/,-z,now//" -e "s/-fno-plt//")"
 	echo "CFLAGS = ${CFLAGS}" >> "$_where"/last_build_config.log
 	echo "LDFLAGS = ${LDFLAGS}" >> "$_where"/last_build_config.log
@@ -105,10 +105,18 @@ _build() {
 	  fi
 	  if [ "$_LOCAL_OPTIMIZED" = 'true' ]; then
 	    # make using all available threads
-	    _buildtime64=$( time ( schedtool -B -n 1 -e ionice -n 1 make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime64=$( time ( make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 )
+	    if [ "$_log_errors_to_file" = "true" ]; then
+	      make -j$(nproc) 2> "$_where/debug.log"
+	    else
+	      _buildtime64=$( time ( schedtool -B -n 1 -e ionice -n 1 make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime64=$( time ( make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 )
+	    fi
 	  else
 	    # make using makepkg settings
-	    _buildtime64=$( time ( schedtool -B -n 1 -e ionice -n 1 make 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime64=$( time ( make 2>&1 ) 3>&1 1>&2 2>&3 )
+	    if [ "$_log_errors_to_file" = "true" ]; then
+	      make -j$(nproc) 2> "$_where/debug.log"
+	    else
+	      _buildtime64=$( time ( schedtool -B -n 1 -e ionice -n 1 make 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime64=$( time ( make 2>&1 ) 3>&1 1>&2 2>&3 )
+	    fi
 	  fi
 	fi
 
@@ -156,10 +164,21 @@ _build() {
 	  fi
 	  if [ "$_LOCAL_OPTIMIZED" = 'true' ]; then
 	    # make using all available threads
-	    _buildtime32=$( time ( schedtool -B -n 1 -e ionice -n 1 make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime32=$( time ( make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 )
+	    if [ "$_log_errors_to_file" = "true" ]; then
+	      make -j$(nproc) 2> "$_where/debug.log"
+	    else
+	      _buildtime32=$( time ( schedtool -B -n 1 -e ionice -n 1 make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime32=$( time ( make -j$(nproc) 2>&1 ) 3>&1 1>&2 2>&3 )
+	    fi
 	  else
 	    # make using makepkg settings
-	    _buildtime32=$( time ( schedtool -B -n 1 -e ionice -n 1 make 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime32=$( time ( make 2>&1 ) 3>&1 1>&2 2>&3 )
+	    if [ "$_log_errors_to_file" = "true" ]; then
+	      make -j$(nproc) 2> "$_where/debug.log"
+	    else
+	      _buildtime32=$( time ( schedtool -B -n 1 -e ionice -n 1 make 2>&1 ) 3>&1 1>&2 2>&3 ) || _buildtime32=$( time ( make 2>&1 ) 3>&1 1>&2 2>&3 )
+	    fi
+	  fi
+	  if [ "$_nomakepkg_dep_resolution_distro" = "debuntu" ] && [ "$_NOLIB64" != "true" ]; then # Install 64-bit deps back after 32-bit wine is built
+	    _debuntu_64
 	  fi
 	fi
 }

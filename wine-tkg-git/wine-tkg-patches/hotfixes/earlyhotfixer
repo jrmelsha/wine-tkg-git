@@ -1,17 +1,57 @@
 #!/bin/bash
 
+if [[ "$_custom_wine_source" = *"ValveSoftware"* ]] || [[ "$_custom_wine_source" = *"GloriousEggroll"* ]]; then
+  _unfrog="true"
+fi
+
 if [ -d "${srcdir}"/"${_stgsrcdir}" ]; then
 
     if [ "$_use_staging" = "true" ] && grep -Fxq 'Disabled: True' "${srcdir}/${_stgsrcdir}/patches/mfplat-streaming-support/definition"; then
-      warning "! Staging has disabled mfplat support on this revision, so video playback will not work in games using mfplat !"
+      warning "! Staging has disabled mfplat support on this revision, so video playback will not work in games using mfplat unless a hotfix is available !"
     fi
+
+    # Valve Proton specifics
+    if [ "$_unfrog" = "true" ]; then
+      # Fixes for 32-bit ldap, futex_waitv outside of Valve's container
+      cp "$_where"/wine-tkg-patches/hotfixes/valve/fixes/*.mypatch "$_where"/
+
+      if [ "$_steamclient_noswap" = "true" ]; then
+        cp "$_where"/wine-tkg-patches/hotfixes/valve/0001-proton-steamclient-swap-revert.mypatch "$_where"/
+      fi
+
+      if [[ ${_community_patches[*]} =~ "amd_fsr_fshack.mypatch" ]]; then
+        cp "$_where"/wine-tkg-patches/hotfixes/valve/proton-fsr.mypatch "$_where"/
+      fi
+
+      warning "Disabling any known to be broken community patch on valve proton tree"
+      _community_patches=$(echo $_community_patches | sed "s/0001-ntdll-Use-kernel-soft-dirty-flags-for-write-watches-.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/0002-proton_QPC.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/EA_desktop_fix.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/amdags-proton.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/atiadlxx-proton.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/ntdll_Map_top-down_if_dll_characteristics_include_DYNAMIC_BASE.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/unhide-prefix-update-window.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/Add-SORT_DIGITSAS-UMBERS-flag-to-CompareStringsEx.mypatch//g" | tr -s " ")
+    fi
+    # /Valve Proton specifics
 
     # Community Patches
 
+    # Disable the 0002-proton_QPC patch when using 488a00c or newer
+    if ( [ "$_protonify" = "true" ] || [ "$_EXTERNAL_INSTALL" = "proton" ] ) && [[ ${_community_patches[*]} =~ "0002-proton_QPC.mypatch" ]] && ( git merge-base --is-ancestor 488a00c3be2e4ef0dd0c945ac96e0f1a49c449f8 HEAD ); then
+      warning "Disabling the 0002-proton_QPC community patch since it's superseded by your current protonify patchset"
+      _community_patches=$(echo $_community_patches | sed "s/0002-proton_QPC.mypatch//g" | tr -s " ")
+    fi
+
     # Disable the amd_fsr_fshack patch if _proton_fs_hack is disabled.
-    if [[ ${_community_patches[*]} =~ "amd_fsr_fshack.mypatch" ]] && ( [ "$_proton_fs_hack" != "true" ] || [ "$_use_staging" != "true" ] ); then
-      warning "Disabling the amd_fsr_fshack community patch because its _proton_fs_hack dependency is disabled"
-      _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack.mypatch//g" | tr -s " ")
+    if [[ ${_community_patches[*]} =~ "amd_fsr_fshack.mypatch" ]] && [ "$_unfrog" != "true" ]; then
+      if [ "$_use_staging" = "true" ] && [ "$_proton_fs_hack" = "true" ]; then
+        _steamvr_support="true"
+      elif [ "$_proton_fs_hack" != "true" ] || [ "$_use_staging" != "true" ]; then
+        warning "Disabling the amd_fsr_fshack community patch because its _proton_fs_hack dependency is disabled"
+        _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack.mypatch//g" | tr -s " ")
+      fi
     fi
 
     # LFH
@@ -24,6 +64,12 @@ if [ -d "${srcdir}"/"${_stgsrcdir}" ]; then
     if [[ ${_community_patches[*]} =~ "Shell32-CreateDirectoryInDestinationInFileOp-Move-multiop.mypatch" ]] && [ "$_use_staging" != "true" ]; then
       warning "Disabling Shell32-CreateDirectoryInDestinationInFileOp-Move-multiop.mypatch on mainline"
       _community_patches=$(echo $_community_patches | sed "s/Shell32-CreateDirectoryInDestinationInFileOp-Move-multiop.mypatch//g" | tr -s " ")
+    fi
+
+    # Star Citizen fixes
+    if [[ ${_community_patches[*]} =~ "star-citizen-StorageDeviceSeekPenaltyProperty.mypatch" ]] && [ "$_use_staging" = "true" ]; then
+      warning "Disabling staging patchsets breaking Star Citizen: ntdll-ForceBottomUpAlloc, ntdll-WRITECOPY and ntdll-Builtin_Prot"
+      _staging_args+=(-W ntdll-ForceBottomUpAlloc -W ntdll-WRITECOPY -W ntdll-Builtin_Prot)
     fi
 
     # Disable Add-SORT_DIGITSAS-UMBERS-flag-to-CompareStringsEx patch if the Wine version selected already contains the commit which implements it.
