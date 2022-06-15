@@ -372,12 +372,7 @@ function build_dxvk_nvapi {
   unset CXXFLAGS
   unset LDFLAGS
 
-  meson --cross-file build-win64.txt --buildtype release --prefix "$_nowhere"/Proton/build/lib64-dxvk-nvapi "$_nowhere"/Proton/build/lib64-dxvk-nvapi
-  cd "$_nowhere"/Proton/build/lib64-dxvk-nvapi && ninja install
-  cd "$_nowhere"/Proton/dxvk-nvapi
-
-  meson --cross-file build-win32.txt --buildtype release --prefix "$_nowhere"/Proton/build/lib32-dxvk-nvapi "$_nowhere"/Proton/build/lib32-dxvk-nvapi
-  cd "$_nowhere"/Proton/build/lib32-dxvk-nvapi && ninja install
+  cd "$_nowhere"/Proton/dxvk-nvapi && ./package-release.sh master "$_nowhere"/Proton/build
 
   cd "$_nowhere"
 }
@@ -963,8 +958,8 @@ else
       build_dxvk_nvapi
       mkdir -p "$_nowhere"/proton_dist_tmp/lib64/wine/nvapi
       mkdir -p "$_nowhere"/proton_dist_tmp/lib/wine/nvapi
-      cp -v "$_nowhere"/Proton/build/lib64-dxvk-nvapi/bin/* "$_nowhere"/proton_dist_tmp/lib64/wine/nvapi
-      cp -v "$_nowhere"/Proton/build/lib32-dxvk-nvapi/bin/* "$_nowhere"/proton_dist_tmp/lib/wine/nvapi
+      cp -v "$_nowhere"/Proton/build/dxvk-nvapi-master/x64/* "$_nowhere"/proton_dist_tmp/lib64/wine/nvapi
+      cp -v "$_nowhere"/Proton/build/dxvk-nvapi-master/x32/* "$_nowhere"/proton_dist_tmp/lib/wine/nvapi
     fi
 
     echo ''
@@ -1120,6 +1115,13 @@ else
       sed -i "s|.*PROTON_BYPASS_SHADERCACHE_PATH.*|     \"PROTON_BYPASS_SHADERCACHE_PATH\": \"${_proton_shadercache_path}\",|g" "proton_tkg_$_protontkg_version/user_settings.py"
     fi
 
+    # Disable esync/fsync by default when fastsync is enabled
+    if [ "$_use_fastsync" = "true" ]; then
+      sed -i 's/.*PROTON_NO_ESYNC.*/     "PROTON_NO_ESYNC": "1",/g' "proton_tkg_$_protontkg_version/user_settings.py"
+      sed -i 's/.*PROTON_NO_FSYNC.*/     "PROTON_NO_FSYNC": "1",/g' "proton_tkg_$_protontkg_version/user_settings.py"
+      sed -i 's/.*PROTON_NO_FUTEX2.*/     "PROTON_NO_FUTEX2": "1",/g' "proton_tkg_$_protontkg_version/user_settings.py"
+    fi
+
     # Use the corresponding DXVK/D9VK combo options
     if [ "$_use_dxvk" != "false" ]; then
       sed -i 's/.*PROTON_USE_WINED3D11.*/#     "PROTON_USE_WINED3D11": "1",/g' "proton_tkg_$_protontkg_version/user_settings.py"
@@ -1146,17 +1148,19 @@ else
       echo "Fixing x86_64 PE files..."
       ( cd "$_nowhere/proton_tkg_$_protontkg_version/files/$_x86_64_windows_tail"
       if [ "$_pkg_strip" = "true" ]; then
-        find -type f -not '(' -iname '*.pc' -or -iname '*.cmake' -or -iname '*.a' -or -iname '*.la' -or -iname '*.def' ')' -printf '--strip-debug\0%p\0%p\0' | xargs -0 -r -P1 -n3 objcopy --file-alignment=4096
+        find -type f -not '(' -iname '*.pc' -or -iname '*.cmake' -or -iname '*.a' -or -iname '*.la' -or -iname '*.def' ')' -printf '--strip-debug\0%p\0%p\0' | xargs -0 -r -P1 -n3 objcopy --file-alignment=4096 --set-section-flags .text=contents,alloc,load,readonly,code
       fi
-      find -type f -name "*.dll" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py"
-      find -type f -name "*.drv" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py" )
+      #find -type f -name "*.dll" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py"
+      #find -type f -name "*.drv" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py"
+      )
       echo "Fixing i386 PE files..."
       ( cd "$_nowhere/proton_tkg_$_protontkg_version/files/$_i386_windows_tail"
       if [ "$_pkg_strip" = "true" ]; then
-        find -type f -not '(' -iname '*.pc' -or -iname '*.cmake' -or -iname '*.a' -or -iname '*.la' -or -iname '*.def' ')' -printf '--strip-debug\0%p\0%p\0' | xargs -0 -r -P1 -n3 objcopy --file-alignment=4096
+        find -type f -not '(' -iname '*.pc' -or -iname '*.cmake' -or -iname '*.a' -or -iname '*.la' -or -iname '*.def' ')' -printf '--strip-debug\0%p\0%p\0' | xargs -0 -r -P1 -n3 objcopy --file-alignment=4096 --set-section-flags .text=contents,alloc,load,readonly,code
       fi
-      find -type f -name "*.dll" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py"
-      find -type f -name "*.drv" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py" )
+      #find -type f -name "*.dll" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py"
+      #find -type f -name "*.drv" -printf "%p\0" | xargs -0 -r -P8 -n1 "$_nowhere/proton_template/pefixup.py"
+      )
     fi
 
     # perms
