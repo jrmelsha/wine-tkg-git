@@ -95,6 +95,7 @@ _exit_cleanup() {
   rm -rf "$_where"/*.conf
   rm -rf "$_where"/*.orig
   rm -rf "$_where"/*.rej
+  rm -rf "$_where"/temp
 
   if [ -n "$_buildtime64" ]; then
     msg2 "Compilation time for 64-bit wine: \n$_buildtime64\n"
@@ -228,11 +229,29 @@ msg2 ''
     fi
   fi
 
+  # makepkg: grab temp profile data in flight - Else the makepkg loop clears and forgets
+  if [ -e "$_where"/temp ]; then
+    source "$_where"/temp
+  fi
+
   # Check for proton-tkg token to prevent broken state as we need to enforce some defaults
   if [ -e "$_proton_tkg_path"/proton_tkg_token ] && [ -n "$_proton_tkg_path" ]; then
-    if [ "$_LOCAL_PRESET" != "valve" ] && [[ "$_LOCAL_PRESET" != valve-exp* ]]; then
+    if [[ "$_LOCAL_PRESET" != valve* ]] && [ "$_LOCAL_PRESET" != "none" ]; then
       _LOCAL_PRESET=""
-	fi
+    fi
+    if [ -z "$_LOCAL_PRESET" ]; then
+      msg2 "No _LOCAL_PRESET set in .cfg. Please select your desired base:"
+      read -p "    What kind of Proton base do you want?`echo $'\n    > 1.Valve Proton Experimental Bleeding Edge\n      2.Valve Proton Experimental\n      3.Valve Proton\n      4.Wine upstream Proton\n    choice[1-4?]: '`" CONDITION;
+      if [ "$CONDITION" = "2" ]; then
+        _LOCAL_PRESET="valve-exp"
+      elif [ "$CONDITION" = "3" ]; then
+        _LOCAL_PRESET="valve"
+      elif [ "$CONDITION" = "4" ]; then
+        _LOCAL_PRESET=""
+      else
+        _LOCAL_PRESET="valve-exp-bleeding"
+      fi
+    fi
     _EXTERNAL_INSTALL="proton"
     _EXTERNAL_NOVER="false"
     _nomakepkg_nover="true"
@@ -261,15 +280,47 @@ msg2 ''
     error "This special option doesn't use pacman and requires you to run 'proton-tkg.sh' script from proton-tkg dir."
     _exit_cleanup
     exit
+  else
+    if [ ! -e "$_where"/BIG_UGLY_FROGMINER ] && [ -z "$_LOCAL_PRESET" ]; then
+      msg2 "No _LOCAL_PRESET set in .cfg. Please select your desired base (or hit enter for default) :"
+
+      i=0
+      for _profiles in "$_where/wine-tkg-profiles"/wine-tkg-*.cfg; do
+        _GOTCHA=( "${_profiles//*\/wine-tkg-/}" )
+        msg2 "  $i - ${_GOTCHA//.cfg/}" && ((i+=1))
+      done
+
+      _profiles=( `ls "$_where/wine-tkg-profiles"/wine-tkg-*.cfg` )
+      _strip_profiles=( "${_profiles[@]//*\/wine-tkg-/}" )
+
+      read -rp "  choice [0-$(($i-1))]: " _SELECT_PRESET;
+
+      _LOCAL_PRESET="${_strip_profiles[$_SELECT_PRESET]//.cfg/}"
+
+      # Clear the default preset
+      if [ "$_LOCAL_PRESET" = "default" ]; then
+        _LOCAL_PRESET="none"
+      fi
+
+      echo "_LOCAL_PRESET='$_LOCAL_PRESET'" > "$_where"/temp
+    fi
   fi
 
   # Load preset configuration files if present and selected. All values will overwrite customization.cfg ones.
-  if [ -n "$_LOCAL_PRESET" ] && [ -e "$_where"/wine-tkg-profiles/wine-tkg-"$_LOCAL_PRESET".cfg ]; then
+  if [ -n "$_LOCAL_PRESET" ] && ( [ -e "$_where"/wine-tkg-profiles/wine-tkg-"$_LOCAL_PRESET".cfg ] || [ -e "$_where"/wine-tkg-profiles/legacy/wine-tkg-"$_LOCAL_PRESET".cfg ] ); then
     if [ "$_LOCAL_PRESET" = "valve" ] || [[ "$_LOCAL_PRESET" = valve-exp* ]]; then
       source "$_where"/wine-tkg-profiles/wine-tkg-"$_LOCAL_PRESET".cfg && msg2 "Preset configuration $_LOCAL_PRESET will be used to override customization.cfg values." && msg2 ""
     else
-      source "$_where"/wine-tkg-profiles/wine-tkg.cfg && source "$_where"/wine-tkg-profiles/wine-tkg-"$_LOCAL_PRESET".cfg && msg2 "Preset configuration $_LOCAL_PRESET will be used to override customization.cfg values." && msg2 ""
-	fi
+      source "$_where"/wine-tkg-profiles/wine-tkg.cfg
+      if [ -e "$_where"/wine-tkg-profiles/wine-tkg-"$_LOCAL_PRESET".cfg ]; then
+        source "$_where"/wine-tkg-profiles/wine-tkg-"$_LOCAL_PRESET".cfg
+      elif [ -e "$_where"/wine-tkg-profiles/legacy/wine-tkg-"$_LOCAL_PRESET".cfg ]; then
+        source "$_where"/wine-tkg-profiles/legacy/wine-tkg-"$_LOCAL_PRESET".cfg
+      fi
+      msg2 "Preset configuration $_LOCAL_PRESET will be used to override customization.cfg values." && msg2 ""
+    fi
+  elif [ -n "$_LOCAL_PRESET" ] && [ "$_LOCAL_PRESET" != "none" ]; then
+    error "Preset '$_LOCAL_PRESET' was not found anywhere! exiting..." && exit 1
   fi
 
   # Disable undesirable patchsets when using official proton wine source
@@ -766,6 +817,9 @@ _prepare() {
 	# Manual staging patches application on top of proton valve trees
 	if [[ "$_custom_wine_source" = *"ValveSoftware"* ]] && [ "$_use_staging" = "true" ]; then
 	  _proton_staging
+	  if [ "$_use_GE_patches" = "true" ]; then
+	    _GE
+	  fi
 	fi
 
     source "$_where"/wine-tkg-patches/proton/use_clock_monotonic/use_clock_monotonic
