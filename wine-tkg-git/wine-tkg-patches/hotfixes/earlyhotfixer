@@ -13,6 +13,9 @@ if [ -d "${srcdir}"/"${_stgsrcdir}" ]; then
     # Wayland driver check
     if [[ ${_community_patches[*]} =~ "wine_wayland_driver.mypatch" ]]; then
       _wayland_driver="true"
+      warning "Disabling the fshack and vk childwindow patchsets since the wayland driver is enabled"
+      _proton_fs_hack="false"
+      _childwindow_fix="false"
     fi
 
     # Valve Proton specifics
@@ -25,6 +28,11 @@ if [ -d "${srcdir}"/"${_stgsrcdir}" ]; then
 
       if [ "$_steamclient_noswap" = "true" ]; then
         cp "$_where"/wine-tkg-patches/hotfixes/valve/0001-proton-steamclient-swap-revert.mypatch "$_where"/
+      fi
+
+      if [[ ${_community_patches[*]} =~ "amd_fsr_fshack-alternative.mypatch" ]]; then
+        _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack.mypatch//g" | tr -s " ")
+        _GE_FSR="true"
       fi
 
       if [[ ${_community_patches[*]} =~ "amd_fsr_fshack.mypatch" ]]; then
@@ -44,6 +52,7 @@ if [ -d "${srcdir}"/"${_stgsrcdir}" ]; then
       _community_patches=$(echo $_community_patches | sed "s/amdags.mypatch//g" | tr -s " ")
       _community_patches=$(echo $_community_patches | sed "s/atiadlxx-proton.mypatch//g" | tr -s " ")
       _community_patches=$(echo $_community_patches | sed "s/ntdll_Map_top-down_if_dll_characteristics_include_DYNAMIC_BASE.mypatch//g" | tr -s " ")
+      _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack-alternative.mypatch//g" | tr -s " ")
       _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack.mypatch//g" | tr -s " ")
       _community_patches=$(echo $_community_patches | sed "s/wine_wayland_driver.mypatch//g" | tr -s " ")
       _community_patches=$(echo $_community_patches | sed "s/unhide-prefix-update-window.mypatch//g" | tr -s " ")
@@ -60,12 +69,13 @@ if [ -d "${srcdir}"/"${_stgsrcdir}" ]; then
     fi
 
     # Disable the amd_fsr_fshack patch if _proton_fs_hack is disabled.
-    if [[ ${_community_patches[*]} =~ "amd_fsr_fshack.mypatch" ]] && [ "$_unfrog" != "true" ]; then
+    if [[ ${_community_patches[*]} =~ "amd_fsr_fshack.mypatch" ]] || [[ ${_community_patches[*]} =~ "amd_fsr_fshack-alternative.mypatch" ]] && [ "$_unfrog" != "true" ]; then
       if [ "$_use_staging" = "true" ] && [ "$_proton_fs_hack" = "true" ]; then
         _steamvr_support="true"
       elif [ "$_proton_fs_hack" != "true" ] || [ "$_use_staging" != "true" ]; then
         warning "Disabling the amd_fsr_fshack community patch because its _proton_fs_hack dependency is disabled"
         _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack.mypatch//g" | tr -s " ")
+        _community_patches=$(echo $_community_patches | sed "s/amd_fsr_fshack-alternative.mypatch//g" | tr -s " ")
       fi
     fi
 

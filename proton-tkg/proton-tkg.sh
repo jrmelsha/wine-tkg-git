@@ -155,13 +155,6 @@ function new_lib_path_check {
   echo "_x86_64_windows_path=$_x86_64_windows_path" >>"$_logdir"/proton-tkg.log 2>&1
 }
 
-function clone_proton {
-  git clone https://github.com/ValveSoftware/Proton || true # It'll complain the path already exists on subsequent builds
-  cd Proton
-  git reset --hard origin/HEAD
-  git clean -xdf
-}
-
 function build_vrclient {
   cd "$_nowhere"
   source "$_nowhere/proton_tkg_token"
@@ -838,16 +831,25 @@ else
 
     if [ "$_NUKR" != "debug" ]; then
       if [ -d Proton ] && [ ! -f Proton/proton ]; then
-        rm -rf "$_resources_path"/Proton/*
+        ( cd Proton && find . -name . -o -prune -exec rm -rf -- {} + ) # We need to clean everything including dotfiles
       fi
       # Clone Proton tree as we need to build some tools from it
-      clone_proton
-      if ! git pull --ff-only; then
-        cd ..
-        rm -rf "$_resources_path"/Proton/*
+      git clone https://github.com/ValveSoftware/Proton || true # It'll complain the path already exists on subsequent builds
+      cd Proton
+      git reset --hard origin/HEAD
+      git clean -xdf
+      if ( ! git pull --ff-only ) || ( [ -n "$_bleeding_tag" ] ); then
         echo -e "######\nProton tree was force-pushed upstream.. Recloning clean to avoid issues..\n######"
-        clone_proton
+        find . -name . -o -prune -exec rm -rf -- {} + # We need to clean everything including dotfiles
+        cd ..
+        git clone https://github.com/ValveSoftware/Proton || true # It'll complain the path already exists on subsequent builds
+        cd Proton
+      else
         git pull origin
+      fi
+      if [ -n "$_bleeding_tag" ]; then
+        _bleeding_commit=$(git rev-list -n 1 "${_bleeding_tag}")
+        _proton_branch="$_bleeding_commit"
       fi
       git checkout "$_proton_branch"
 
@@ -1001,6 +1003,20 @@ else
 
     # Grab conf template and inject version
     echo "$_versionpre" "TKG-proton-$_protontkg_true_version" > "proton_tkg_$_protontkg_version/version" && cp "proton_template/conf"/* "proton_tkg_$_protontkg_version"/ && sed -i -e "s|TKGVERSION|$_protontkg_version|" "proton_tkg_$_protontkg_version/compatibilitytool.vdf"
+
+    # Inject toolmanifest
+    if [ "$_built_with_runtime" = "true" ]; then
+      if [ -e "$_nowhere"/Proton/toolmanifest_runtime.vdf ] && [ "$_nosteamruntime" = "sniper" ]; then
+        rm -f "proton_tkg_$_protontkg_version"/toolmanifest.vdf && cp "$_nowhere"/Proton/toolmanifest_runtime.vdf "proton_tkg_$_protontkg_version"/toolmanifest.vdf
+        sed -i -e "s/1391110/1628350/g" "proton_tkg_$_protontkg_version"/toolmanifest.vdf
+      elif [ -e "$_nowhere"/Proton/toolmanifest_runtime.vdf ] && [ "$_nosteamruntime" != "true" ]; then
+        rm -f "proton_tkg_$_protontkg_version"/toolmanifest.vdf && cp "$_nowhere"/Proton/toolmanifest_runtime.vdf "proton_tkg_$_protontkg_version"/toolmanifest.vdf
+      elif [ -e "$_nowhere"/Proton/toolmanifest_noruntime.vdf ] && [ "$_nosteamruntime" = "true" ]; then
+        rm -f "proton_tkg_$_protontkg_version"/toolmanifest.vdf && cp "$_nowhere"/Proton/toolmanifest_noruntime.vdf "proton_tkg_$_protontkg_version"/toolmanifest.vdf
+      fi
+    elif [ -e "$_nowhere"/Proton/toolmanifest_noruntime.vdf ]; then
+      rm -f "proton_tkg_$_protontkg_version"/toolmanifest.vdf && cp "$_nowhere"/Proton/toolmanifest_noruntime.vdf "proton_tkg_$_protontkg_version"/toolmanifest.vdf
+    fi
 
     # steampipe fixups
     cp "$_nowhere"/proton_template/steampipe_fixups.py "$_nowhere"/"proton_tkg_$_protontkg_version"/
@@ -1228,9 +1244,12 @@ else
           fi
         fi
       else
+        # Get rid of the token
+        rm -f proton_tkg_token
+        mkdir -p "$_nowhere"/built && mv "proton_tkg_$_protontkg_version" "$_nowhere/built/" && echo "" &&
         echo "####################################################################################################"
         echo ""
-        echo " Your Proton-tkg build is now available in $_nowhere/proton_tkg_$_protontkg_version"
+        echo " Your Proton-tkg build is now available in $_nowhere/built/proton_tkg_$_protontkg_version"
         echo ""
         echo "####################################################################################################"
       fi

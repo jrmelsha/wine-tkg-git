@@ -47,22 +47,22 @@ pkgdesc='This "Wine to rule them all" package is the result of some random pkgbu
 url='https://github.com/Tk-Glitch/PKGBUILDS/tree/master/wine-tkg-git'
 arch=('x86_64')
 
-# Don't strip if _pkg_strip is disabled
-if [ "$_pkg_strip" != "true" ]; then
- _makepkg_options+=('!strip')
-fi
+_makepkg_options+=('!strip')
+_makepkg_options+=('!ccache')
 
 # Only pass the staticlibs option to system-wide installs
 if [ "$_EXTERNAL_INSTALL" != "true" ]; then
   _makepkg_options+=(staticlibs)
 fi
 
-if msg2; then # Arch chroot workaround for even more looping fun
-  # Use ccache if available
-  if pacman -Qq ccache &> /dev/null; then
-    msg2 'ccache was found and will be used'
-  else
-    msg2 'ccache was not found and will not be used'
+if [ "$_NOCCACHE" != "true" ]; then
+  if msg2; then # Arch chroot workaround for even more looping fun
+    # Use ccache if available
+    if pacman -Qq ccache &> /dev/null; then
+      msg2 'ccache was found and will be used'
+    else
+      msg2 'ccache was not found and will not be used'
+    fi
   fi
 fi
 
@@ -275,7 +275,7 @@ prepare() {
 	  (
 	  cd "${srcdir}/${_winesrcdir}"
 	  if [ -z "$_bleeding_tag" ]; then
-	    _bleeding_tag=$(git tag -l --sort=-creatordate | grep "bleeding" | head -n 1)
+	    _bleeding_tag=$(git tag -l --sort=-v:refname | grep "bleeding" | head -n 1)
 	  fi
 	  _bleeding_commit=$(git rev-list -n 1 "${_bleeding_tag}")
 	  _plain_commit="${_bleeding_commit}"
