@@ -1252,6 +1252,9 @@ else
         echo " Your Proton-tkg build is now available in $_nowhere/built/proton_tkg_$_protontkg_version"
         echo ""
         echo "####################################################################################################"
+        if [ "$_proton_tar_built" = "true" ];then
+          ( cd "$_nowhere"/built && 7z a "proton_tkg_$_protontkg_version" "proton_tkg_$_protontkg_version" && rm -rf "proton_tkg_$_protontkg_version" )
+        fi
       fi
     else
       # Apparently this can happen.. So let's clean it up if needed.
