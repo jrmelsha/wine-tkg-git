@@ -1,8 +1,5 @@
 #!/bin/bash
 
-export WINEESYNC=1
-export WINEFSYNC=1
-
 # Created by: Tk-Glitch <ti3nou at gmail dot com>
 
 # This script replaces the wine-tkg PKGBUILD's function for use outside of makepkg or on non-pacman distros
